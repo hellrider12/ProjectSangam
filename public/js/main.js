@@ -4,7 +4,13 @@ const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
 
-brushsize = 1;
+const startGameBanner = document.getElementById('StartGame');
+const startGameButton = document.getElementById('hostSelector');
+startGameButton.style.display = 'none'
+
+
+
+let brushsize = 1;
 let canSendCords = true;
 let sendTick = 0, recieveTick = 0;
 let playerCount = 0;
@@ -14,25 +20,46 @@ let coord = { x: 0, y: 0, brushsize: brushsize };
 let paint = false;
 const canvas = document.querySelector('#canvasBoard');
 const ctx = canvas.getContext('2d');
+
+/* <--------------------------------- vars done ---------------------------------------------> */
+
 var pName = "";
-var isHost = true;
-var hasGameStarted = true;
-var canDraw = true
-var canChooseWord = true;
+var isHost = false;
+var hasGameStarted = false;
+var canDraw = false;
+
+/* <--------------------------------- vars done ---------------------------------------------> */
+
+
+
+var canChooseWord = false;
 var guessWord = "";
 var guessedPlayer = false;
-var atleastOneGuessed = false;
-var audioMute = false;
+
+
 
 var penColor = "#000000";
 
 
+//Event Listeners for mouse
+window.addEventListener('load', () => {
+    canvas.addEventListener('mousedown', startPainting);
+    canvas.addEventListener('mouseup', stopPainting);
+    document.addEventListener('mousemove', sketch);
+    canvas.addEventListener('wheel', brushSize);
+    canvas.addEventListener('onmouseout', stopPainting);
+});
+
+
+
+
+/* <--------------------------------- Chat Stuff ---------------------------------------------> */
 // get username and room from URL
 const { username, room } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
 });
 
-console.log(username, room);
+pName = username;
 
 const socket = io();
 
@@ -40,7 +67,7 @@ const socket = io();
 socket.emit('joinRoom', { username, room });
 
 // get room and users
-socket.on('roomUsers',({room, users}) => {
+socket.on('roomUsers', ({ room, users }) => {
     outputRoomName(room);
     outputUsers(users);
 });
@@ -92,24 +119,13 @@ function outputUsers(users) {
 }
 
 
+/* <-------------------------------------- Chat Stuff ------------------------------------------> */
+
+
 
 /* <--------------------------------------------------------------------------------> */
 
 
-
-
-
-/* <--------------------------------------------------------------------------------> */
-/* <--------------------------------------------------------------------------------> */
-
-
-window.addEventListener('load', () => {
-    canvas.addEventListener('mousedown', startPainting);
-    canvas.addEventListener('mouseup', stopPainting);
-    document.addEventListener('mousemove', sketch);
-    canvas.addEventListener('wheel', brushSize);
-    canvas.addEventListener('onmouseout', stopPainting);
-});
 
 function getPosition(event) { //Getting the mouse position
     if (canDraw) {
@@ -130,6 +146,7 @@ function startPainting(event) { //Setting the canvas to drawable or not
     getPosition(event);
     socket.emit('startPaint', paint);
 }
+
 function stopPainting() { //Setting the canvas to drawable or not
     paint = false;
     socket.emit('startPaint', paint);
@@ -157,12 +174,6 @@ socket.on('startPaint', paintStatus => {
     }
 })
 
-
-function startGame() {
-    socket.emit('startGame');
-    loginContainer.innerHTML = "";
-}
-
 function sketch(event) {
     if (!paint) return;
     if (canDraw) {
@@ -178,15 +189,18 @@ function sketch(event) {
     }
 }
 
-
-/* <-----------------------------------------------------------------> */
-
 function sendPosition(Xpos, Ypos) {
     if (canDraw) {
         socket.emit('position', { x: Xpos, y: Ypos, brushsize: brushsize });
         sendTick++;
     }
 }
+
+socket.on('setHost', (value) => {
+    this.isHost = value;
+    if (isHost)
+        startGameButton.style.display = 'inline-block';
+})
 
 socket.on('otherPOS', position => {
     recieveTick++;
@@ -211,26 +225,45 @@ socket.on('otherPOS', position => {
 socket.on('penColor', hexValue => {
     penColor = hexValue;
     console.log('PC: ', penColor);
-
 });
 
 socket.on('clearCanvas', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
-socket.on('gameStarted', () => {
-    console.log("GAME STARTED!!");
-    loginContainer.innerHTML = "";
-    hasGameStarted = true;
-
-});
 
 socket.on('drawEnd', () => {
     clearInterval(drawTimerReset);
     canDraw = false;
     clearCanvas();
-    if (!atleastOneGuessed) {
-        var noGuess = new sound("/sfx/noGuess.mp3");
-        noGuess.play();
-    }
 })
+
+
+
+//client clicks start Game
+startGameButton.addEventListener('click', () => {
+    startGame();
+    startGameButton.style.display = 'none';
+})
+
+//informs server to start game
+function startGame() {
+    socket.emit('startGame');
+}
+
+
+
+/* <-----------------------------------------------------------------> */
+
+
+
+socket.on('gameStarted', () => {
+    console.log("GAME STARTED!!");
+    startGameBanner.innerHTML = "GameStarted";
+    hasGameStarted = true;
+    if (isHost) {
+        console.log(canDraw);
+        canDraw = true;
+    }
+});
+
