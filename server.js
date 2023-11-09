@@ -188,7 +188,7 @@ io.on('connection', socket => {
     });
 
     socket.on('penColor', hexValue => {
-        io.sockets.emit('penColor', hexValue);
+        io.emit('penColor', hexValue);
 
     });
 

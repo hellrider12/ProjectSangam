@@ -3,12 +3,43 @@ const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
 
+const clearCanvasButton = document.getElementById('clearCanvasButton');
+clearCanvasButton.style.visibility = 'none';
 
-const startGameBanner = document.getElementById('StartGame');
+const startGameBanner = document.getElementById('StartGame')
+
 const startGameButton = document.getElementById('hostSelector');
-startGameButton.style.display = 'none'
+startGameButton.style.visibility = 'none'
 
+/* <--------------------------------- Color Buttons ---------------------------------------------> */
 
+const redButton = document.getElementById('redButton');
+const yellowButton = document.getElementById('yellowButton');
+const blueButton = document.getElementById('blueButton');
+const blackButton = document.getElementById('blackButton');
+
+redButton.addEventListener('click', red)
+yellowButton.addEventListener('click', yellow)
+blueButton.addEventListener('click', blue)
+blackButton.addEventListener('click', black)
+
+function red(){
+    setColor('#FF0000');
+}
+
+function yellow(){
+    setColor('#FFFF00')
+}
+
+function blue(){
+    setColor('#0000FF')
+}
+
+function black(){
+    setColor('#000000')
+}
+
+/* <--------------------------------- Color Buttons ---------------------------------------------> */
 
 let brushsize = 1;
 let canSendCords = true;
@@ -27,6 +58,7 @@ var pName = "";
 var isHost = false;
 var hasGameStarted = false;
 var canDraw = false;
+var penColor = "#000000";
 
 /* <--------------------------------- vars done ---------------------------------------------> */
 
@@ -38,7 +70,7 @@ var guessedPlayer = false;
 
 
 
-var penColor = "#000000";
+
 
 
 //Event Listeners for mouse
@@ -162,7 +194,8 @@ function brushSize(event) {
 }
 
 function setColor(hexValue) {
-    if (canDraw) {
+    console.log(hexValue)
+    if (canDraw && isHost) {
         socket.emit('penColor', hexValue);
     }
 }
@@ -198,8 +231,10 @@ function sendPosition(Xpos, Ypos) {
 
 socket.on('setHost', (value) => {
     this.isHost = value;
-    if (isHost)
-        startGameButton.style.display = 'inline-block';
+    if (isHost) {
+        startGameButton.style.visibility = 'visible';
+        clearCanvasButton.style.visibility = 'visible';
+    }
 })
 
 socket.on('otherPOS', position => {
@@ -226,6 +261,14 @@ socket.on('penColor', hexValue => {
     penColor = hexValue;
     console.log('PC: ', penColor);
 });
+
+
+clearCanvasButton.addEventListener('click', clearCanvasClient)
+
+function clearCanvasClient() {
+    if (isHost)
+        socket.emit('clearCanvas');
+}
 
 socket.on('clearCanvas', () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -262,7 +305,6 @@ socket.on('gameStarted', () => {
     startGameBanner.innerHTML = "GameStarted";
     hasGameStarted = true;
     if (isHost) {
-        console.log(canDraw);
         canDraw = true;
     }
 });

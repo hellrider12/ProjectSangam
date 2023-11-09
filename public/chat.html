@@ -29,9 +29,16 @@
       <!------------------------- canvas area --------------------------------->
       <div id="canvasContainer" >
         <canvas id="canvasBoard" style="border: 2px solid black; " height="500px" width="800px"></canvas>
-        <div id="controls">
-          <button onclick="clearCanvas()">Clear</button>
-          <label for="cursorColor">Cursor Color:</label>
+        <div style="display: flex; flex-direction: row;justify-content: space-between;" id="controls">
+          <button id="clearCanvasButton">Clear</button>
+          
+          <div style="display:flex; flex-direction: row;" id="colorContainer">
+            <label for="cursorColor">Color:</label>
+            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: red;" id="redButton" class="ColorPickerButton"></div>
+            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: blue;" id="blueButton" class="ColorPickerButton"></div>
+            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: yellow;" id="yellowButton" class="ColorPickerButton"></div>
+            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: black;" id="blackButton" class="ColorPickerButton"></div>
+          </div>
         </div>
       </div>
       <!------------------------- canvas area --------------------------------->
