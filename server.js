@@ -20,12 +20,13 @@ var wordToDraw = null;
 var time = 0;
 var isTimerOn = false;
 var timer;
+var guessersList = [];
 
 /* ---------------------------- vars done ------------------------------ */
 
 var playerIndex = 0;
 
-var guessersList = [];
+
 var scoreBoard = [];
 
 
@@ -117,16 +118,16 @@ io.on('connection', socket => {
     function updateHost() {
         console.log('update Host')
         players.forEach((player) => {
-            io.to(player.getPlayerSocID()).emit('setHost', player.getIsHost());
+            io.to(player.getPlayerSocID()).emit('setHostClient', player.getIsHost());
         })
     }
 
     //if the host leaves to shift the host to someone else
     function setHost(indexIdToIgnore = -1) {
-        if (players.length > 2) {
-            let index = Math.floor(Math.random() * (players.length - 1))
+        if (players.length > 1) {
+            let index = Math.floor(Math.random() * (players.length))
             while (index == indexIdToIgnore) {
-                index = Math.floor(Math.random() * (players.length - 1))
+                index = Math.floor(Math.random() * (players.length))
             }
 
             for (let i = 0; i < players.length; i++) {
@@ -138,15 +139,8 @@ io.on('connection', socket => {
                 }
             }
         }
-        else if(players.length == 2) {
-            if (indexIdToIgnore == 1)
-                players[0].setIsHost(true);
-            else
-                players[1].setIsHost(true);
-        }
-        else{
-            players[0].setIsHost(true);
-        }
+        else
+        player[0].setIsHost(true);
         updateHost();
     }
 
@@ -154,9 +148,9 @@ io.on('connection', socket => {
     //if the Room Owner leaves to shift the owner to someone else
     function setRoomOwner(indexIdToIgnore = -1) {
         if (players.length > 2) {
-            let index = Math.floor(Math.random() * (players.length - 1))
+            let index = Math.floor(Math.random() * (players.length))
             while (index == indexIdToIgnore) {
-                index = Math.floor(Math.random() * (players.length - 1))
+                index = Math.floor(Math.random() * (players.length))
             }
 
             for (let i = 0; i < players.length; i++) {
@@ -175,23 +169,35 @@ io.on('connection', socket => {
     }
 
     function randomWordGenerator() {
-        let index = Math.floor(Math.random() * (words.length - 1))
+        let index = Math.floor(Math.random() * (words.length))
         return words[index];
     }
+    
+    
+    socket.on('wordGuessed', () => {
+        guessersList.push(players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)]);
 
+        // welcome current user
+        socket.emit('message', formatMessage(botName, 'You Have Guessed Correctly!')); // to single client 
+
+        //broadcast when a user connect
+        socket.broadcast.to(roomName).emit('message', formatMessage(botName, ` ${players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName()} has guessed correctly!`));
+    })
 
     function formatTime(t) {
         let min = Math.floor(t / 60);
         let sec = t - (min * 60);
+        min = min > 10 ? min : '0' + min ;
+        sec = sec > 10 ? sec : '0' + sec ;
         return min + ':' + sec;
     }
 
 
     function startTimer() {
         if (isTimerOn) {
-            if (time == 10) {
+            if (time == 10) {// Time limit
                 isTimerOn = false;
-                setHost(players.map(e => e.getPlayerSocID()).indexOf(socket.id));
+                setHost(players.map(e => e.getPlayerSocID()).indexOf());
                 hasGameStarted = false;
                 wordToDraw = null;
                 time = 0;
@@ -200,7 +206,7 @@ io.on('connection', socket => {
                 io.sockets.emit('drawEnd')
             }
             let t = formatTime(time);
-            io.sockets.emit('timeSet', t)
+            io.to(roomName).emit('timeSet', t)
             timer = setTimeout(startTimer, 1000);
             time += 1;
         }
@@ -249,27 +255,27 @@ io.on('connection', socket => {
         let wordstartgame = randomWordGenerator()
         wordToDraw = wordstartgame;
         isTimerOn = true;
-        startTimer();
-        io.sockets.emit('gameStarted', wordstartgame);
+        startTimer(socket.id);
+        io.to(roomName).emit('gameStarted', wordstartgame);
         hasGameStarted = true;
         gameStart();
     });
 
     socket.on('penColor', hexValue => {
-        io.emit('penColor', hexValue);
+        io.to(roomName).emit('penColor', hexValue);
 
     });
 
     socket.on('clearCanvas', () => {
-        io.sockets.emit('clearCanvas');
+        io.to(roomName).emit('clearCanvas');
     });
 
     socket.on('startPaint', paint => {
-        socket.broadcast.emit('startPaint', paint);
+        socket.broadcast.to(roomName).emit('startPaint', paint);
     });
 
     function gameStart() {
-        socket.broadcast.emit('startPaint', true);
+        socket.broadcast.to(roomName).emit('startPaint', true);
     }
 });
 

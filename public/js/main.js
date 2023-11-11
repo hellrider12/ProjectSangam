@@ -18,7 +18,11 @@ startGameButton.style.visibility = 'hidden'
 
 const timerLabel = document.getElementById('timerLabel')
 timerLabel.style.visibility = 'hidden';
-timerLabel.innerHTML = '00:00'; 
+timerLabel.innerHTML = '00:00';
+
+const messageField = document.getElementById('chat-form');
+messageField.style.display = 'inline';
+
 /* <--------------------------------- BrushSize Slider ---------------------------------------------> */
 
 const brushSizeSlider = document.getElementById('brushSizeSlider');
@@ -75,13 +79,15 @@ var hasGameStarted = false;
 var canDraw = false;
 var penColor = "#000000";
 var guessWord = "";
+var hasPlayerguessed = false;
+
 
 /* <--------------------------------- vars done ---------------------------------------------> */
 
 
 
 
-var hasPlayerguessed = false;
+
 
 
 
@@ -128,20 +134,36 @@ socket.on('message', message => {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
+
+
 //message submit
 chatForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
+
+
     // get message  text
     const msg = e.target.elements.msg.value;
 
-    //Emit message to server
-    socket.emit('chatMessage', msg);
+    let m = msg.trim().toLowerCase();//New var to check if the entered word is correct or not
+
+    if (m == guessWord) {
+        socket.emit('wordGuessed');
+        messageField.style.display = 'none';
+    }
+
+
+    else {
+        socket.emit('chatMessage', msg);    //Emit message to server
+    }
 
     //clear input 
     e.target.elements.msg.value = '';
     e.target.elements.msg.focus;
 });
+
+
+
 //output message to DOM
 function outputMessage(message) {
     const div = document.createElement('div');
@@ -243,7 +265,7 @@ socket.on('timeSet', (timeRec) => {
     timerLabel.innerHTML = timeRec;
 })
 
-socket.on('setHost', (value) => {
+socket.on('setHostClient', (value) => {
     this.isHost = value;
     if (isHost) {
         startGameButton.style.visibility = 'visible';
@@ -302,7 +324,9 @@ socket.on('drawEnd', () => {
         startGameButton.style.visibility = 'hidden';
         canvasControls.style.visibility = 'hidden';
     }
+    messageField.style.display = 'inline';
     startGameBanner.style.visibility = 'hidden';
+    timerLabel.style.visibility = 'hidden';
     paint = false;
     hasGameStarted = false;
     canDraw = false;
@@ -335,15 +359,18 @@ socket.on('gameStarted', (word) => {
     guessWord = word;
     console.log(guessWord)
     hasGameStarted = true;
+    
     timerLabel.style.visibility = 'visible';
     if (isHost) {
         canDraw = true;
         startGameBanner.innerHTML = guessWord;
         startGameBanner.style.visibility = 'visible';
+        messageField.style.display = 'none';
     }
     else {
         canDraw = false;
         startGameBanner.style.visibility = 'hidden';
+        messageField.style.display = 'inline';
     }
 });
 
@@ -358,3 +385,5 @@ if (event.deltaY < 0 && brushsize < 10) {
     brushsize -= 1;
 }
 } */
+
+
