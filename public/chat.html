@@ -21,27 +21,30 @@
     </header>
 
     <div id="controls">
-      <button id="clearCanvasButton" style="cursor: pointer;
-      padding: 5px 15px;
-      color: var(--light-color-b);
-      background: var(--dark-color-a);
-      font-size: 18px;
-      border-radius: 20px;
-      margin-bottom: 4px;">Clear</button>
+      <button id="clearCanvasButton" style="">Clear</button>
+      <div id="undoRedo">
+        <button id="undo">&#9754;</button>
+        <button id="redo">&#9755;</button>
+      </div>
+      <div>
+        <input type="range" min="1" max="10" value="1" step="1" name="BrushSize" id="brushSizeSlider">
+      </div>
 
-      <input type="range" min="1" max="10" value="1" step="1" name="BrushSize" id="brushSizeSlider">
+      <div id="toolContainer">
+        <label for="tools">Tools: </label>
+        <div id="eraserButton" class="toolBarButton"><i style="font-size:large;" class="fa fa-eraser" aria-hidden="true"></i></div>
+      </div>
 
-      <div style="display:flex; flex-direction: row;margin-left: -50px; " id="colorContainer">
-        <label for="cursorColor" style="font-weight: 600; font-size: 18px; margin-top: 4px;"> Color: </label>
+      <div id="colorContainer">
+        <label for="cursorColor" style="font-weight: 600; font-size: 16px; display: flex; align-self: center;"> Color: </label>
         <div style="background-color: red;" id="redButton" class="ColorPickerButton"></div>
         <div style="background-color: blue;" id="blueButton" class="ColorPickerButton"></div>
         <div style=" background-color: yellow;" id="yellowButton" class="ColorPickerButton"></div>
         <div style=" background-color: black;" id="blackButton" class="ColorPickerButton"></div>
       </div>
-      <div id="timer"><h4 id="timerLabel"></h4></div>
+      <div id="timer"><span style="font-size: 25px;" >&#9203;</span><h4 id="timerLabel"></h4></div>
     </div>
     
-
     <main style="max-height: 501px;" class="chat-main">
       <div class="chat-sidebar">
         <h3><i class="fas fa-comments"></i> Room Name :</h3>
@@ -59,6 +62,8 @@
       </div>
       <!------------------------- canvas area --------------------------------->
       <div class="chat-messages"></div>
+
+
     </main>
 
 

@@ -23,12 +23,33 @@ timerLabel.innerHTML = '00:00';
 const messageField = document.getElementById('chat-form');
 messageField.style.display = 'inline';
 
+
+//undo redo buttons
+const undoButton = document.getElementById('undo');
+
+
+const redoButton = document.getElementById('redo');
+
+
 /* <--------------------------------- BrushSize Slider ---------------------------------------------> */
 
 const brushSizeSlider = document.getElementById('brushSizeSlider');
 brushSizeSlider.addEventListener('change', brushSlider);
 
 /* <--------------------------------- BrushSize Slider ---------------------------------------------> */
+
+
+/* <--------------------------------- toolbar Buttons ---------------------------------------------> */
+
+const eraserButton = document.getElementById('eraserButton')
+eraserButton.addEventListener('click', setEraser);
+
+function setEraser() {
+    setColor('#FFFFFF');
+}
+
+/* <--------------------------------- toolBar Buttons ---------------------------------------------> */
+
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
 
@@ -62,16 +83,17 @@ function black() {
 
 
 let brushsize = 1;
-let canSendCords = true;
 let sendTick = 0, recieveTick = 0;
-let playerCount = 0;
 
 let coord = { x: 0, y: 0, brushsize: brushsize };
+
 let paint = false;
 const canvas = document.querySelector('#canvasBoard');
-const ctx = canvas.getContext('2d');
+const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 /* <--------------------------------- vars done ---------------------------------------------> */
+
+let saveInterval;
 
 var pName = "";
 var isHost = false;
@@ -198,13 +220,11 @@ function getPosition(event) { //Getting the mouse position
     if (canDraw) {
         coord.x = event.clientX - canvas.offsetLeft;
         coord.y = event.clientY - canvas.offsetTop;
-        if ((coord.x < 0 || coord.y < 0) || (coord.x > 800 || coord.y > 600)) {
+        if ((coord.x < 0 || coord.y < 0) || (coord.x > 802 || coord.y > 501)) {
             stopPainting();
         }
-        else if (canSendCords) {
-            sendPosition(coord.x, coord.y); // @Networking
-            return;
-        }
+        sendPosition(coord.x, coord.y); // @Networking
+        return;
     }
 }
 
@@ -214,14 +234,45 @@ function startPainting(event) { //Setting the canvas to drawable or not
     socket.emit('startPaint', paint);
 }
 
+
 function stopPainting() { //Setting the canvas to drawable or not
     paint = false;
     socket.emit('startPaint', paint);
+    /* saveStateTimeout();//canvas Undo */
 }
+
+
+/* {//Canvas Undo
+    undoButton.addEventListener('click', () => { //canvas undo
+        if (isHost) {
+            console.log('undo clicked!')
+            socket.emit('retrieveState');
+        }
+    })
+
+
+    let canSave = true;
+
+
+    function saveStateTimeout() {
+        if (canSave) {
+            canSave = false;
+            socket.emit('saveState', ctx.getImageData(0, 0, canvas.width, canvas.height));  //savestate canvas
+            setTimeout(() => { }, 1000);
+            canSave = true;
+        }
+    }
+
+    socket.on('setState', (canvasState) => { ///canvas undo
+        console.log('put func')
+        ctx.putImageData(canvasState, 0, 0);
+    })
+}*/
+
 
 function brushSlider() {
     brushsize = brushSizeSlider.value;
-}
+} 
 
 
 
@@ -239,6 +290,7 @@ socket.on('startPaint', paintStatus => {
     }
 })
 
+
 function sketch(event) {
     if (!paint) return;
     if (canDraw) {
@@ -251,6 +303,7 @@ function sketch(event) {
         getPosition(event);
         ctx.lineTo(coord.x, coord.y);
         ctx.stroke();
+
     }
 }
 
@@ -359,7 +412,7 @@ socket.on('gameStarted', (word) => {
     guessWord = word;
     console.log(guessWord)
     hasGameStarted = true;
-    
+
     timerLabel.style.visibility = 'visible';
     if (isHost) {
         canDraw = true;

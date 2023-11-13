@@ -14,6 +14,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /* ---------------------------- vars done ------------------------------ */
 
+let undoStack = [];
+
 var roomName;
 var hasGameStarted = false;
 var wordToDraw = null;
@@ -25,8 +27,6 @@ var guessersList = [];
 /* ---------------------------- vars done ------------------------------ */
 
 var playerIndex = 0;
-
-
 var scoreBoard = [];
 
 
@@ -46,7 +46,7 @@ var words = ['sunflower', 'elephant', 'pizza', 'guitar', 'mountain', 'sailboat',
 ];
 
 class Player {
-    constructor(playerName, socID, isHost, isRoomOwner,) {
+    constructor(playerName, socID, isHost, isRoomOwner) {
         this.playerName = playerName;
         this.socID = socID;
         this.isHost = isHost;
@@ -102,10 +102,10 @@ io.on('connection', socket => {
 
 
         // welcome current user
-        socket.emit('message', formatMessage(botName, 'welcome to  the chatCord!')); // to single client 
+        socket.emit('message', formatMessage(botName, 'welcome to MARS DOODLES!')); // to single client 
 
         //broadcast when a user connect
-        socket.broadcast.to(user.room).emit('message', formatMessage(botName, ` ${user.username} has joined the chat!`));
+        socket.broadcast.to(user.room).emit('message', formatMessage(botName, ` ${user.username} has joined the game!`));
 
         //send users and room info
         io.to(user.room).emit('roomUsers', {
@@ -140,7 +140,7 @@ io.on('connection', socket => {
             }
         }
         else
-        player[0].setIsHost(true);
+        players[0].setIsHost(true);
         updateHost();
     }
 
@@ -177,25 +177,25 @@ io.on('connection', socket => {
     socket.on('wordGuessed', () => {
         guessersList.push(players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)]);
 
-        // welcome current user
+        // to the one who has guessed correctly
         socket.emit('message', formatMessage(botName, 'You Have Guessed Correctly!')); // to single client 
 
-        //broadcast when a user connect
+        //to the everyone else
         socket.broadcast.to(roomName).emit('message', formatMessage(botName, ` ${players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName()} has guessed correctly!`));
     })
 
     function formatTime(t) {
         let min = Math.floor(t / 60);
         let sec = t - (min * 60);
-        min = min > 10 ? min : '0' + min ;
-        sec = sec > 10 ? sec : '0' + sec ;
+        min = min >= 10 ? min : '0' + min ;
+        sec = sec >= 10 ? sec : '0' + sec ;
         return min + ':' + sec;
     }
 
 
     function startTimer() {
         if (isTimerOn) {
-            if (time == 10) {// Time limit
+            if (time == 30) {// Time limit
                 isTimerOn = false;
                 setHost(players.map(e => e.getPlayerSocID()).indexOf());
                 hasGameStarted = false;
@@ -204,8 +204,9 @@ io.on('connection', socket => {
                 io.sockets.emit('timeSet', '00:00')
                 io.sockets.emit('startPaint', false);
                 io.sockets.emit('drawEnd')
+                undoStack = [];
             }
-            let t = formatTime(time);
+            let t = formatTime(30 - time);
             io.to(roomName).emit('timeSet', t)
             timer = setTimeout(startTimer, 1000);
             time += 1;
@@ -255,9 +256,17 @@ io.on('connection', socket => {
         let wordstartgame = randomWordGenerator()
         wordToDraw = wordstartgame;
         isTimerOn = true;
+        
+        // to the one who is client
+        socket.emit('message', formatMessage(botName, 'You are Host!')); // to single client 
+
+        //to the everyone else
+        socket.broadcast.to(roomName).emit('message', formatMessage(botName, ` ${players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName()} is the host!`));
+
         startTimer(socket.id);
         io.to(roomName).emit('gameStarted', wordstartgame);
         hasGameStarted = true;
+        undoStack = [];
         gameStart();
     });
 
@@ -270,6 +279,8 @@ io.on('connection', socket => {
         io.to(roomName).emit('clearCanvas');
     });
 
+    
+
     socket.on('startPaint', paint => {
         socket.broadcast.to(roomName).emit('startPaint', paint);
     });
@@ -277,6 +288,21 @@ io.on('connection', socket => {
     function gameStart() {
         socket.broadcast.to(roomName).emit('startPaint', true);
     }
+
+    /*socket.on('undoServer', () => {
+        console.log('undoserver')
+        io.to(roomName).emit('undoClient');
+    })
+
+     socket.on('saveState', (state) => {
+        console.log('save state')
+        undoStack.push = state;
+    })
+
+    socket.on('retrieveState', () => {
+        console.log('state send back')
+        io.to(roomName).emit('setState', undoStack.pop());
+    }) */
 });
 
 
