@@ -1,6 +1,6 @@
-/* this is Comment */
+/*--------------CLIENT SIDE ------------- */
 
-const chatForm = document.getElementById('chat-form');
+const chatForm = document.getElementById('chat-form'); 
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
@@ -129,14 +129,16 @@ window.addEventListener('load', () => {
 
 
 /* <--------------------------------- Chat Stuff ---------------------------------------------> */
-// get username and room from URL
+
+// Get username and room from URL
 const { username, room } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
 });
 
 pName = username;
 
-const socket = io();
+//create  a new socket.io client instance
+const socket = io();  
 
 //join chat room
 socket.emit('joinRoom', { username, room });
@@ -147,49 +149,40 @@ socket.on('roomUsers', ({ room, users }) => {
     outputUsers(users);
 });
 
-
 //message from server
 socket.on('message', message => {
-    console.log(message);
     outputMessage(message);
-
-
+  
     //scroll down 
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    chatMessages.scrollTop = chatMessages.scrollHeight;      
 });
-
 
 
 //message submit
 chatForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+    e.preventDefault();                      //prevent the default submission of form
 
+    const msg = e.target.elements.msg.value; // get message text
 
-
-    // get message  text
-    const msg = e.target.elements.msg.value;
-
-    let m = msg.trim().toLowerCase();//New var to check if the entered word is correct or not
+    let m = msg.trim().toLowerCase();        //New var to check if the entered word is correct or not
 
     if (m == guessWord) {
         socket.emit('wordGuessed');
-        messageField.style.display = 'none';
+        messageField.style.display = 'none'; //disable the inputbox and send button so player wont be able to text after guessing correct ans
     }
-
-
     else {
-        socket.emit('chatMessage', msg);    //Emit message to server
+        socket.emit('chatMessage', msg);     //Emit message to server
     }
 
-    //clear input 
-    e.target.elements.msg.value = '';
+    e.target.elements.msg.value = '';        //clear input box after sending message
     e.target.elements.msg.focus;
 });
 
 
 
 //output message to DOM
-function outputMessage(message) {
+//function create a div which contain all the informations(username,text,time)
+function outputMessage(message) {            
     const div = document.createElement('div');
     div.classList.add('message');
     div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
@@ -204,7 +197,7 @@ function outputRoomName(room) {
     roomName.innerText = room;
 }
 
-//add usrrs to Dom
+//add users to Dom
 function outputUsers(users) {
     userList.innerHTML = `${users.map(user => `<li>${user.username}</li>`).join('')}`;
 }

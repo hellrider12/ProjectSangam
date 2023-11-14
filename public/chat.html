@@ -12,20 +12,23 @@
 
 <body>
   <div class="chat-container">
+    <!-- header -->
     <header class="chat-header">
       <h1><i class="fas fa-mars"></i> MARS DOODLE</h1>
-      <!--       <h2 id="text">TEXT</h2> -->
       <h3 id="StartGame"></h3>
       <button id="hostSelector" class="btn" type="button">Start Game</button>
       <a href="index.html" class="btn">Leave Room</a>
     </header>
+     <!-- header -->
 
+    <!-- div containing all the canvas tools -->
     <div id="controls">
-      <button id="clearCanvasButton" style="">Clear</button>
+      <button id="clearCanvasButton" >Clear</button>
       <div id="undoRedo">
         <button id="undo">&#9754;</button>
         <button id="redo">&#9755;</button>
       </div>
+      <a id="download_image_link" href="download_link" >IMAGE</a>
       <div>
         <input type="range" min="1" max="10" value="1" step="1" name="BrushSize" id="brushSizeSlider">
       </div>
@@ -44,8 +47,11 @@
       </div>
       <div id="timer"><span style="font-size: 25px;" >&#9203;</span><h4 id="timerLabel"></h4></div>
     </div>
+    <!-- div containing all the canvas tools -->
     
+
     <main style="max-height: 501px;" class="chat-main">
+      <!-- Div containing ROOM NAME AND USERS -->
       <div class="chat-sidebar">
         <h3><i class="fas fa-comments"></i> Room Name :</h3>
         <h2 id="room-name"></h2>
@@ -53,22 +59,18 @@
         <ul id="users">
         </ul>
       </div>
-
-
+       <!-- Div containing ROOM NAME AND USERS -->
 
       <!------------------------- canvas area --------------------------------->
       <div id="canvasContainer">
         <canvas  width="802px" height="501px" id="canvasBoard" style="border: 0.001rem solid black;"></canvas>
       </div>
       <!------------------------- canvas area --------------------------------->
+
+      <!-- Chat Box -->
       <div class="chat-messages"></div>
-
-
+      <!-- Chat Box -->
     </main>
-
-
-
-
 
     <!------------------------ type area---------------------------------->
     <div class="chat-form-container">

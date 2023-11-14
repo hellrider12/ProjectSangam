@@ -1,16 +1,20 @@
-const path = require('path');
-const http = require('http');
-const express = require('express');
+const path = require('path'); // bring in node.js core module 
+const http = require('http'); // bring in http module
+const express = require('express'); // bring in express
 const socketio = require('socket.io');
 const formatMessage = require('./utils/messages');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./utils/users');
 
+const Filter = require("bad-words"); // bring in the library of bad words
+const filter = new Filter(); 
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 //set static folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); 
+
+
 
 /* ---------------------------- vars done ------------------------------ */
 
@@ -81,9 +85,9 @@ class Player {
 let players = []
 
 
-const botName = 'bot';
-// Run when client connects
+const botName = 'bot'; 
 
+// Run when client connects
 io.on('connection', socket => {
     socket.on('joinRoom', ({ username, room }) => {
         const user = userJoin(socket.id, username, room);
@@ -101,13 +105,13 @@ io.on('connection', socket => {
         updateHost();
 
 
-        // welcome current user
+        // welcome current user, send the message to client side (only to the user that's connecting)
         socket.emit('message', formatMessage(botName, 'welcome to MARS DOODLES!')); // to single client 
 
-        //broadcast when a user connect
+        //broadcast when a user connects (emit message to everybody expect the user that's connecting)
         socket.broadcast.to(user.room).emit('message', formatMessage(botName, ` ${user.username} has joined the game!`));
 
-        //send users and room info
+        //send users and room info (broadcast to everybody)
         io.to(user.room).emit('roomUsers', {
             room: user.room,
             users: getRoomUsers(user.room)
@@ -168,12 +172,14 @@ io.on('connection', socket => {
         }
     }
 
+    //function to generate the random word for the host to draw
     function randomWordGenerator() {
-        let index = Math.floor(Math.random() * (words.length))
+        let index = Math.floor(Math.random() * (words.length));
         return words[index];
     }
     
-    
+   
+    //On the event when correct word is guessed
     socket.on('wordGuessed', () => {
         guessersList.push(players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)]);
 
@@ -213,13 +219,20 @@ io.on('connection', socket => {
         }
     }
 
+    //function to filter the chats and blocking all the bad words
+    function check(msg) { 
+        return filter.clean(msg);
+    }
+
     //listen for chatMessage
-    socket.on('chatMessage', (msg) => {
+    socket.on('chatMessage', (msg ) => {
+        msg = check(msg);
         const user = getCurrentUser(socket.id);
-        io.to(user.room).emit('message', formatMessage(user.username, msg));
+        io.to(user.room).emit('message', formatMessage(user.username, msg));  // server send the message to everybody
     });
 
-    // runs when client disconnects
+    
+    // Runs when client disconnects
     socket.on('disconnect', () => {
         if (players.length > 1) {
             let b = false;
@@ -235,9 +248,10 @@ io.on('connection', socket => {
                 }
             })
         }
-        const user = userLeave(socket.id);
+        const user = userLeave(socket.id); 
         if (user) {
-            io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the chat!`));
+            //broadcast to everybody that the user has left the game
+            io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the game!`));
             //send users and room info
             io.to(user.room).emit('roomUsers', {
                 room: user.room,
@@ -309,7 +323,7 @@ io.on('connection', socket => {
 
 
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000; //check if there's a environment variable named port
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
