@@ -12,7 +12,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 //set static folder
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'))); 
+
+
 
 
 
@@ -258,7 +260,7 @@ io.on('connection', socket => {
         io.to(user.room).emit('message', formatMessage(user.username, msg));  // server send the message to everybody
     });
 
-
+    
     // Runs when client disconnects
     socket.on('disconnect', () => {
         if (players.length > 1) {
@@ -275,7 +277,7 @@ io.on('connection', socket => {
                 }
             })
         }
-        const user = userLeave(socket.id);
+        const user = userLeave(socket.id); 
         if (user) {
             //broadcast to everybody that the user has left the game
             io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the game!`));
