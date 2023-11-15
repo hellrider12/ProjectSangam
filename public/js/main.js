@@ -1,10 +1,6 @@
 /*--------------CLIENT SIDE ------------- */
 
-<<<<<<< HEAD
 const chatForm = document.getElementById('chat-form');
-=======
-const chatForm = document.getElementById('chat-form'); 
->>>>>>> 3ca626930462596bfe3cd020fac0a78bd12a7b01
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
 const userList = document.getElementById('users');
@@ -156,11 +152,7 @@ const { username, room } = Qs.parse(location.search, {
 pName = username;
 
 //create  a new socket.io client instance
-<<<<<<< HEAD
 const socket = io();
-=======
-const socket = io();  
->>>>>>> 3ca626930462596bfe3cd020fac0a78bd12a7b01
 
 //join chat room
 socket.emit('joinRoom', { username, room });
@@ -174,11 +166,6 @@ socket.on('roomUsers', ({ room, users }) => {
 //message from server
 socket.on('message', message => {
     outputMessage(message);
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> 3ca626930462596bfe3cd020fac0a78bd12a7b01
     //scroll down 
     chatMessages.scrollTop = chatMessages.scrollHeight;      
 });
@@ -208,11 +195,7 @@ chatForm.addEventListener('submit', (e) => {
 
 //output message to DOM
 //function create a div which contain all the informations(username,text,time)
-<<<<<<< HEAD
 function outputMessage(message) {
-=======
-function outputMessage(message) {            
->>>>>>> 3ca626930462596bfe3cd020fac0a78bd12a7b01
     const div = document.createElement('div');
     div.classList.add('message');
     div.innerHTML = `<p class="meta">${message.userName} <span>${message.time}</span></p>
