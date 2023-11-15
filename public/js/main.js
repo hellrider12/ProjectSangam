@@ -56,19 +56,19 @@ brushSizeSlider.addEventListener('change', brushSlider);
 
 
 /* <--------------------------------- toolbar Buttons ---------------------------------------------> */
-
+let isEraser = false;
 const eraserButton = document.getElementById('eraserButton')
 eraserButton.addEventListener('click', setEraser);
 
 function setEraser() {
     setColor('#FFFFFF');
+    isEraser = true;
 }
 
 /* <--------------------------------- toolBar Buttons ---------------------------------------------> */
 
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
-
 const redButton = document.getElementById('redButton');
 const yellowButton = document.getElementById('yellowButton');
 const blueButton = document.getElementById('blueButton');
@@ -81,18 +81,22 @@ blackButton.addEventListener('click', black)
 
 function red() {
     setColor('#FF0000');
+    isEraser = false;
 }
 
 function yellow() {
     setColor('#FFFF00')
+    isEraser = false;
 }
 
 function blue() {
     setColor('#0000FF')
+    isEraser = false;
 }
 
 function black() {
     setColor('#000000')
+    isEraser = false;
 }
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
@@ -106,6 +110,13 @@ let coord = { x: 0, y: 0, brushsize: brushsize };
 let paint = false;
 const canvas = document.querySelector('#canvasBoard');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+canvas.addEventListener('mouseover', () => {
+    if(isEraser)
+    canvas.style.cursor = 'cell'
+    else
+    canvas.style.cursor = 'crosshair'
+})
 
 /* <--------------------------------- vars done ---------------------------------------------> */
 
@@ -228,7 +239,7 @@ function getPosition(event) { //Getting the mouse position
     if (canDraw) {
         coord.x = event.clientX - canvas.offsetLeft;
         coord.y = event.clientY - canvas.offsetTop;
-        if ((coord.x < 0 || coord.y < 0) || (coord.x > 802 || coord.y > 501)) {
+        if ((coord.x < 0 || coord.y < 0) || (coord.x > canvas.getBoundingClientRect().right || coord.y > canvas.getBoundingClientRect().bottom)) {
             stopPainting();
         }
         sendPosition(coord.x, coord.y); // @Networking
@@ -304,6 +315,9 @@ function sketch(event) {
     if (canDraw) {
         ctx.beginPath();
         ctx.lineWidth = brushsize;
+        if(isEraser)
+        ctx.lineCap='square';
+        else
         ctx.lineCap = 'round';
         console.log(penColor);
         ctx.strokeStyle = penColor;
