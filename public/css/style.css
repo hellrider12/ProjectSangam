@@ -172,6 +172,7 @@ a {
 	color: #fff;
 	padding: 20px 20px 60px;
 	overflow-y: hidden;
+	overflow-x: scroll;
 }
 
 .chat-sidebar h2 {

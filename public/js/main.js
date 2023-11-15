@@ -1,3 +1,5 @@
+/*--------------CLIENT SIDE ------------- */
+
 const chatForm = document.getElementById('chat-form');
 const chatMessages = document.querySelector('.chat-messages');
 const roomName = document.getElementById('room-name');
@@ -29,6 +31,20 @@ const undoButton = document.getElementById('undo');
 
 
 const redoButton = document.getElementById('redo');
+
+/* <--------------------------------- Modal Menu ---------------------------------------------> */
+
+const modalMenuContainer = document.getElementById('modalContainer');
+const modalTimer = document.getElementById('modalTimer');
+const modalContent = document.getElementById('modalValue');
+
+modalTimer.addEventListener('click', () => {
+    modalMenuContainer.style.display = 'none';
+})
+/* <--------------------------------- Modal Menu ---------------------------------------------> */
+
+
+
 
 
 /* <--------------------------------- BrushSize Slider ---------------------------------------------> */
@@ -127,13 +143,15 @@ window.addEventListener('load', () => {
 
 
 /* <--------------------------------- Chat Stuff ---------------------------------------------> */
-// get username and room from URL
+
+// Get username and room from URL
 const { username, room } = Qs.parse(location.search, {
     ignoreQueryPrefix: true,
 });
 
 pName = username;
 
+//create  a new socket.io client instance
 const socket = io();
 
 //join chat room
@@ -145,52 +163,43 @@ socket.on('roomUsers', ({ room, users }) => {
     outputUsers(users);
 });
 
-
 //message from server
 socket.on('message', message => {
-    console.log(message);
     outputMessage(message);
-
 
     //scroll down 
     chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
 
-
 //message submit
 chatForm.addEventListener('submit', (e) => {
-    e.preventDefault();
+    e.preventDefault();                      //prevent the default submission of form
 
+    const msg = e.target.elements.msg.value; // get message text
 
-
-    // get message  text
-    const msg = e.target.elements.msg.value;
-
-    let m = msg.trim().toLowerCase();//New var to check if the entered word is correct or not
+    let m = msg.trim().toLowerCase();        //New var to check if the entered word is correct or not
 
     if (m == guessWord) {
         socket.emit('wordGuessed');
-        messageField.style.display = 'none';
+        messageField.style.display = 'none'; //disable the inputbox and send button so player wont be able to text after guessing correct ans
     }
-
-
     else {
-        socket.emit('chatMessage', msg);    //Emit message to server
+        socket.emit('chatMessage', msg);     //Emit message to server
     }
 
-    //clear input 
-    e.target.elements.msg.value = '';
+    e.target.elements.msg.value = '';        //clear input box after sending message
     e.target.elements.msg.focus;
 });
 
 
 
 //output message to DOM
+//function create a div which contain all the informations(username,text,time)
 function outputMessage(message) {
     const div = document.createElement('div');
     div.classList.add('message');
-    div.innerHTML = `<p class="meta">${message.username} <span>${message.time}</span></p>
+    div.innerHTML = `<p class="meta">${message.userName} <span>${message.time}</span></p>
     <p class="text">
         ${message.text}
     </p>`;
@@ -202,9 +211,9 @@ function outputRoomName(room) {
     roomName.innerText = room;
 }
 
-//add usrrs to Dom
+//add users to Dom
 function outputUsers(users) {
-    userList.innerHTML = `${users.map(user => `<li>${user.username}</li>`).join('')}`;
+    userList.innerHTML = `${users.map(user => !(user.isHost)?`<li>${user.playerName} : ${user.score}</li>`:`<li>${user.playerName} : ${user.score} (Host) </li>`).join('')}`;
 }
 
 
@@ -272,7 +281,7 @@ function stopPainting() { //Setting the canvas to drawable or not
 
 function brushSlider() {
     brushsize = brushSizeSlider.value;
-} 
+}
 
 
 
@@ -330,6 +339,7 @@ socket.on('setHostClient', (value) => {
     }
 })
 
+
 socket.on('otherPOS', position => {
     recieveTick++;
     paint = true;
@@ -350,7 +360,7 @@ socket.on('otherPOS', position => {
     paint = false;
 });
 
-socket.on('penColor', hexValue => {
+socket.on('penColor', hexValue => { // function that recieves the request to change the pencolor variable
     penColor = hexValue;
     console.log('PC: ', penColor);
 });
@@ -358,17 +368,21 @@ socket.on('penColor', hexValue => {
 
 
 
-function clearCanvasClient() {
+function clearCanvasClient() { //function the sends server the request to clear the canvas
     if (isHost)
         socket.emit('clearCanvas');
 }
 
-socket.on('clearCanvas', () => {
+
+
+socket.on('clearCanvas', () => { //function that clears the canvas when requested by the server
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 });
 
 
-socket.on('drawEnd', () => {
+
+
+socket.on('drawEnd', () => { //function is called when the a game session is finished
     if (isHost) {
         startGameButton.style.visibility = 'visible';
         canvasControls.style.visibility = 'visible';
@@ -384,6 +398,20 @@ socket.on('drawEnd', () => {
     hasGameStarted = false;
     canDraw = false;
     clearCanvasClient();
+})
+
+
+
+socket.on('displayWinners', (winnerList) => { //Display winners to every client 
+    modalMenuContainer.style.display = 'block'; 
+    console.log(winnerList);
+    if(winnerList.length >= 1){
+        modalContent.innerHTML = `${winnerList.map(winner => `<li>${winner.playerName}  : ${winner.score}</li><br>`).join('')}`;
+    }
+    else
+    {
+        modalContent.innerHTML = `<li>No one gained any points</li>`
+    }
 })
 
 
@@ -407,12 +435,12 @@ function startGame() {
 
 
 
-socket.on('gameStarted', (word) => {
+socket.on('gameStarted', (word) => { // function executed when the server signals the game is started
     console.log("GAME STARTED!!");
     guessWord = word;
     console.log(guessWord)
     hasGameStarted = true;
-
+    modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
     if (isHost) {
         canDraw = true;
