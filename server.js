@@ -256,8 +256,9 @@ io.on('connection', socket => {
     //listen for chatMessage
     socket.on('chatMessage', (msg) => {
         msg = check(msg);
-        const user = getCurrentUser(socket.id);
-        io.to(user.room).emit('message', formatMessage(user.username, msg));  // server send the message to everybody
+        const user = players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName();
+        console.log(user)
+        io.to(roomName).emit('message', formatMessage(user, msg));  // server send the message to everybody
     });
 
     
