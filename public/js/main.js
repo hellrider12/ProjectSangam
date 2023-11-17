@@ -149,8 +149,70 @@ window.addEventListener('load', () => {
     canvas.addEventListener('mouseup', stopPainting);
     document.addEventListener('mousemove', sketch);
     canvas.addEventListener('onmouseout', stopPainting);
+    resizeWindow();
 });
 
+const chatMessagesId = document.getElementById('chatMessages');
+
+const brushSizeSliderContainer = document.getElementById('brushSizeSliderContainer');
+
+const colorContainer = document.getElementById('colorContainer');
+
+const toolContainer = document.getElementById('toolContainer')
+
+const shrink = document.getElementById('shrink');
+window.addEventListener('resize', resizeWindow)
+
+let isSmall = false;
+
+function resizeWindow() {
+    canvas.width = 0.54 * window.innerWidth;
+    canvas.height = 0.717 * window.innerHeight;
+    const container = document.createElement('div');
+    container.innerHTML = 'Tools'
+    if(window.innerWidth <= 700 && !isSmall)
+    {
+        shrink.classList.remove('bar');
+        isSmall = true;
+        
+        
+        container.style.height = '20px'
+        container.style.width = '60px'
+        const list = document.createElement('ul');
+        let listE = document.createElement('li');
+        listE.appendChild(brushSizeSliderContainer)
+        list.appendChild(listE)
+        listE = document.createElement('li');
+        listE.appendChild(toolContainer)
+        list.appendChild(listE)
+        listE = document.createElement('li');
+        listE.appendChild(colorContainer)
+        list.appendChild(listE)
+        container.appendChild(list);
+        shrink.appendChild(container);
+        list.style.display = 'none';
+        list.style.position = 'relative';
+        list.style.zIndex = '1';
+        container.classList.add('btn');
+        container.addEventListener('click', () => {
+            list.style.display = 'block';
+            
+        })
+        canvas.addEventListener('mousedown', () => {
+            list.style.display = 'none';
+        })
+        
+
+    }
+    else if(window.innerWidth > 700 ) {
+        isSmall = false;
+        shrink.classList.add('bar')
+        shrink.removeChild(shrink.firstChild);
+        shrink.appendChild(brushSizeSliderContainer)
+        shrink.appendChild(toolContainer)
+        shrink.appendChild(colorContainer)
+    }
+}
 
 
 /* <--------------------------------- Chat Stuff ---------------------------------------------> */
@@ -237,8 +299,8 @@ function outputUsers(users) {
 
 function getPosition(event) { //Getting the mouse position
     if (canDraw) {
-        coord.x = event.clientX - canvas.offsetLeft;
-        coord.y = event.clientY - canvas.offsetTop;
+        coord.x = event.clientX - canvas.getBoundingClientRect().left;
+        coord.y = event.clientY - canvas.getBoundingClientRect().top;
         if ((coord.x < 0 || coord.y < 0) || (coord.x > canvas.getBoundingClientRect().right || coord.y > canvas.getBoundingClientRect().bottom)) {
             stopPainting();
         }
