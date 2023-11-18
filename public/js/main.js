@@ -25,6 +25,13 @@ timerLabel.innerHTML = '00:00';
 const messageField = document.getElementById('chat-form');
 messageField.style.display = 'inline';
 
+const chatSidebar = document.getElementById('chatSidebar');
+const displaySidebarButton = document.getElementById('displaySidebarButton');
+displaySidebarButton.addEventListener('click', ()=> {
+    chatSidebar.style.display =  chatSidebar.style.display ==='none'?'block': 'none';
+    chatSidebar.style.zIndex =  chatSidebar.style.zIndex ==='0'?'2':'0';
+    chatSidebar.style.position = 'relative';
+})
 
 //undo redo buttons
 const undoButton = document.getElementById('undo');
@@ -166,12 +173,16 @@ window.addEventListener('resize', resizeWindow)
 let isSmall = false;
 
 function resizeWindow() {
-    canvas.width = 0.54 * window.innerWidth;
-    canvas.height = 0.717 * window.innerHeight;
+    
     const container = document.createElement('div');
     container.innerHTML = 'Tools'
     if(window.innerWidth <= 700 && !isSmall)
     {
+        canvas.width = window.innerWidth - 60;
+        canvas.height= 250;
+        chatSidebar.style.display = 'none';
+        chatSidebar.style.zIndex ='0';
+
         shrink.classList.remove('bar');
         isSmall = true;
         
@@ -205,6 +216,11 @@ function resizeWindow() {
 
     }
     else if(window.innerWidth > 700 ) {
+        
+    canvas.width = 0.54 * window.innerWidth;
+    canvas.height = 0.717 * window.innerHeight;
+    chatSidebar.style.display = 'initial';
+
         isSmall = false;
         shrink.classList.add('bar')
         shrink.removeChild(shrink.firstChild);
@@ -508,13 +524,30 @@ function startGame() {
 
 /* <-----------------------------------------------------------------> */
 
-
+function blanks() {
+    var blank = "";
+    var n = guessWord.length;
+    let count = Math.ceil(Math.log(n));
+    let c = Math.floor(Math.random() * n);
+    for (var i = 0; i < n; i++) {
+        let r = Math.floor(Math.random() * n)
+        if (r == c && count >= 0) {
+            blank = blank + guessWord[i];
+            count--;
+        }
+        else {
+            blank = blank + "_ ";
+        }
+    }
+    return blank;
+}
 
 socket.on('gameStarted', (word) => { // function executed when the server signals the game is started
     console.log("GAME STARTED!!");
     guessWord = word;
     console.log(guessWord)
     hasGameStarted = true;
+    var Blanks = blanks();
     modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
     if (isHost) {
@@ -525,7 +558,8 @@ socket.on('gameStarted', (word) => { // function executed when the server signal
     }
     else {
         canDraw = false;
-        startGameBanner.style.visibility = 'hidden';
+        startGameBanner.innerHTML = Blanks; 
+        startGameBanner.style.visibility = 'visible';
         messageField.style.display = 'inline';
     }
 });

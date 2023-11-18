@@ -205,7 +205,7 @@ a {
 /* <---chat message form--> */
 .chat-messages {
 	padding: 20px;
-	max-height: 550px;
+	max-height: 558px;
 	overflow-y: scroll;
 	background-color: rgb(240, 211, 255)
 }
@@ -240,6 +240,10 @@ a {
 	justify-content: flex-end;
 }
 
+#displaySidebarButton {
+	display: none;
+}
+
 .chat-form-container form {
 	width: 400px;
 	height: 30px;
@@ -247,7 +251,7 @@ a {
 }
 
 .chat-form-container input[type='text'] {
-	font-size: 18px;
+	font-size: 16px;
 	padding: 5px;
 	height: 35px;
 	flex: 1;
@@ -255,11 +259,13 @@ a {
 }
 
 /**************************************** MOBILE PHONE RESOLUTION*************************************************************/
-@media screen and (max-width: 717px) {
+@media screen and (max-width: 700px) {
 	.body {
 		margin: 5px;
 	}
-
+	.join-main .btn {
+		font-size: 14px;
+	}
 	.chat-header {
 		padding: 0p;
 	}
@@ -283,31 +289,60 @@ a {
 		display: block;
 		
 	}
-	.chat-sidebar {
-		size: 2%;
-	}
-
 	.chat-main {
 		display: grid;
-
+		grid-auto-flow: row;
 	}
-
-
-	.chat-messages .message {
-		/* 	grid-row: 2;
-		grid-column: 1; */
-		padding: 0px;
+	
+	.chat-sidebar {
+		grid-row: 2/3;
+		grid-column: -4/-3;
+		width: 200%;
+		padding: 15px;
+		overflow-y: scroll;
+		max-height: 250px;
+	}
+	.chat-sidebar h2 {
+		font-size: small;
+		padding: 5px;
 		margin-bottom: 10px;
 	}
-
+	.chat-sidebar h3 {
+		font-size: small;
+		margin-bottom: 7px;
+		border-radius: 5px;
+	}
+	.chat-sidebar ul li {
+		font-size: small;
+		padding: 10px 0;
+	}
+	#canvasContainer {
+		height: 250px;
+		grid-column: 1 / 4;
+		
+	}
+	.chat-messages {
+		height: 250px;
+		max-height: 250px;
+		grid-row: 2/3;
+  		grid-column: -4/-1;
+		padding: 10px;
+	}
+	.chat-messages .message {
+		font-size: 14px;
+		padding: 5px;
+		margin-bottom: 10px;
+	}
+	#displaySidebarButton {
+		margin-left: 8px;
+		display: initial;
+	}
 	.chat-form-container {
 		display: flex;
-		justify-content: flex-end;
+		justify-content:space-around;
 	}
-
 	.chat-form-container form {
-		display: flex;
-		flex-direction: row;
+		width: 300px;
 		height: 20px;
 	}
 
