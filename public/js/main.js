@@ -25,13 +25,7 @@ timerLabel.innerHTML = '00:00';
 const messageField = document.getElementById('chat-form');
 messageField.style.display = 'inline';
 
-const chatSidebar = document.getElementById('chatSidebar');
-const displaySidebarButton = document.getElementById('displaySidebarButton');
-displaySidebarButton.addEventListener('click', ()=> {
-    chatSidebar.style.display =  chatSidebar.style.display ==='none'?'block': 'none';
-    chatSidebar.style.zIndex =  chatSidebar.style.zIndex ==='0'?'2':'0';
-    chatSidebar.style.position = 'relative';
-})
+
 
 //undo redo buttons
 const undoButton = document.getElementById('undo');
@@ -230,6 +224,13 @@ function resizeWindow() {
     }
 }
 
+const chatSidebar = document.getElementById('chatSidebar');
+const displaySidebarButton = document.getElementById('displaySidebarButton');
+displaySidebarButton.addEventListener('click', ()=> {
+    chatSidebar.style.display =  chatSidebar.style.display ==='none'?'block': 'none';
+    chatSidebar.style.zIndex =  chatSidebar.style.zIndex ==='0'?'2':'0';
+    chatSidebar.style.position = 'relative';
+})
 
 /* <--------------------------------- Chat Stuff ---------------------------------------------> */
 
