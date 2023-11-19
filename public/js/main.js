@@ -23,7 +23,7 @@ timerLabel.style.visibility = 'hidden';
 timerLabel.innerHTML = '00:00';
 
 const messageField = document.getElementById('chat-form');
-messageField.style.display = 'inline';
+messageField.style.display = 'flex';
 
 
 
@@ -534,7 +534,7 @@ socket.on('drawEnd', () => { //function is called when the a game session is fin
         startGameButton.style.visibility = 'hidden';
         canvasControls.style.visibility = 'hidden';
     }
-    messageField.style.display = 'inline';
+    messageField.style.display = 'flex';
     startGameBanner.style.visibility = 'hidden';
     timerLabel.style.visibility = 'hidden';
     paint = false;
@@ -614,7 +614,7 @@ socket.on('gameStarted', (word) => { // function executed when the server signal
         canDraw = false;
         startGameBanner.innerHTML = Blanks;
         startGameBanner.style.visibility = 'visible';
-        messageField.style.display = 'inline';
+        messageField.style.display = 'flex';
     }
 });
 

@@ -62,7 +62,7 @@ a {
 	border-top-right-radius: 5px;
 	padding: 10px;
 	display: flex;
-	align-items: first baseline;
+	align-items:center;
 	justify-content: space-around;
 }
 
@@ -79,13 +79,53 @@ a {
 	padding: 10px;
 	background-color: rgb(4, 36, 163);
 }
-
+.startBtn{
+	display: flex;
+    font-size: 17px;
+    padding: 0.8em 1.3em 0.8em 0.9em;
+    color: white;
+    background: linear-gradient(to right, #222246, #725ac1, #222246);
+    border: none;
+    letter-spacing: 0.05em;
+    border-radius: 16px;
+  }
+  .startBtn i{
+    margin-right: 10px;
+    transform: rotate(5deg);
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .startBtn span {
+    transition: transform 0.5s cubic-bezier(0.76, 0, 0.24, 1);
+  }
+  .startBtn:hover i{
+    transform: translateX(5px) rotate(50deg);
+  }
+  .startBtn:hover span {
+    transform: translateX(7px);
+  }
 /* <---header---> */
 
 /* <---Controls bar--> */
 #container {
 	display: none;
 }
+#clearCanvasButton{
+	cursor: pointer;
+	padding: 3px 7px;
+	font-size: 18px;
+	letter-spacing: 1px;
+	background: transparent;
+	border-radius: 10px;
+	transition: ease-out 0.5s;
+	color: white;
+	box-shadow: inset 0 -100px 0 0 #725AC1;
+  }
+  
+#clearCanvasButton:hover {
+	color: #725AC1;
+	box-shadow: inset 0 0 0 0 #725AC1;
+  }
+
 #controls {
 	display: flex;
 	flex-direction: row;
@@ -93,15 +133,6 @@ a {
 	justify-content: space-evenly;
 	height: 35px;
 	background-color: #e2e7fe;
-}
-
-#clearCanvasButton {
-	cursor: pointer;
-	color: var(--light-color-b);
-	background: var(--dark-color-a);
-	font-size: 18px;
-	border-radius: 20px;
-	width: 60px;
 }
 
 #brushSizeSlider {
@@ -172,6 +203,7 @@ a {
 
 /* <---chat sidebar--> */
 .chat-sidebar {
+	
 	background: var(--dark-color-b);
 	color: #fff;
 	padding: 20px 20px 60px;
@@ -245,9 +277,10 @@ a {
 }
 
 .chat-form-container form {
+	display: flex;
 	width: 400px;
 	height: 30px;
-	padding-left: 40px;
+	
 }
 
 .chat-form-container input[type='text'] {
@@ -257,6 +290,52 @@ a {
 	flex: 1;
 	align-self: stretch;
 }
+.sendBtn {
+    font-size: 18px;
+    background: royalblue;
+    color: white;
+    padding: 0.4em 0.9em ;
+    display: flex;
+    flex-direction: row;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.2s;
+    cursor: pointer;
+	margin: 0px 7px;
+    padding-bottom: 1.5em;
+  }
+  .sendBtn span {
+    margin-left: 0.3em;
+    transition: all 0.3s ease-in-out;
+  }
+  .sendBtn i {
+    transform-origin: center center;
+    transition: transform 0.3s ease-in-out;
+  }
+  .sendBtn:hover .icon {
+    animation: fly-1 0.6s ease-in-out infinite alternate;
+  }
+  .sendBtn:hover i {
+    transform: translateX(1.2em) rotate(45deg) scale(1.1);
+  }
+  .sendBtn:hover span {
+    transform: translateX(5em);
+  }
+  
+/*   .sendBtn:active {
+    transform: scale(0.95);
+  } */
+  
+  @keyframes fly-1 {
+    from {
+      transform: translateY(0.1em);
+    }
+  
+    to {
+      transform: translateY(-0.1em);
+    }
+  }
+  
 
 /**************************************** MOBILE PHONE RESOLUTION*************************************************************/
 @media screen and (max-width: 700px) {
@@ -280,7 +359,9 @@ a {
 		padding: 8px;
 		background-color: rgb(4, 36, 163);
 	}
-
+	.startBtn{ 
+		font-size: small;
+	}
 	.btn {
 		font-size: 12px;
 	}
@@ -333,24 +414,64 @@ a {
 		padding: 5px;
 		margin-bottom: 10px;
 	}
-	#displaySidebarButton {
+	/* #displaySidebarButton {
 		margin-left: 8px;
 		display: initial;
-	}
+	} */
+	#displaySidebarButton {
+		margin-left: 7px;
+		margin-right: 7px;
+		width: 80px;
+		height: 30px;
+		border-radius: 5px;
+		border: none;
+		transition: all 0.5s ease-in-out;
+		font-size: small;
+		display: flex;
+		align-items: center;
+		background: royalblue;
+		color: #f5f5f5;
+	  }
+	  /* 
+	  #displaySidebarButton:hover {
+		box-shadow: 0 0 20px 0px #2e2e2e3a;
+	  } */
+	  
+	  #displaySidebarButton .icon {
+		position: absolute;
+		height: 40px;
+		width: 40px;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		transition: all 0.5s;
+	  }
+	  
+	  #displaySidebarButton span {
+		transform: translateX(40px);
+	  }
+	  
+	  #displaySidebarButton:hover .icon {
+		width: 80px;
+	  }
+	  
+	  #displaySidebarButton:hover span{
+		transition: all 0.5s;
+		opacity: 0;
+	  }
 	.chat-form-container {
 		display: flex;
-		justify-content:space-around;
+		justify-content:space-between;
+		height: 50px;
 	}
-	.chat-form-container form {
-		width: 300px;
-		height: 20px;
-	}
-
 	.chat-form-container input[type='text'] {
 		width: 150px;
-		font-size: 15px;
+		font-size: 16px;
 		padding: 0px;
-		height: 25px;
+		height: 30px;
+	} 
+	.sendBtn {   
+		font-size: small;
 	}
 }
 
@@ -433,7 +554,6 @@ a {
 .join-main .btn {
 	margin-top: 20px;
 	width: 100%;
-	
 	/*          */
 	border-radius: 15px;
 	border-color: rgb(182, 204, 247);
