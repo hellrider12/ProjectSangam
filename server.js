@@ -6,13 +6,14 @@ const formatMessage = require('./utils/messages');
 const { userJoin, getCurrentUser, userLeave, getRoomUsers } = require('./utils/users');
 
 const Filter = require("bad-words"); // bring in the library of bad words
+
 const filter = new Filter();
 
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 //set static folder
-app.use(express.static(path.join(__dirname, 'public'))); 
+app.use(express.static(path.join(__dirname, 'public')));
 
 
 
@@ -20,7 +21,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 /* ---------------------------- vars done ------------------------------ */
 
-let undoStack = [];
+
 
 var roomName;
 var hasGameStarted = false;
@@ -239,7 +240,6 @@ io.on('connection', socket => {
                 io.sockets.emit('timeSet', '00:00')
                 io.sockets.emit('startPaint', false);
                 io.sockets.emit('drawEnd')
-                undoStack = [];
             }
             let t = formatTime(30 - time);
             io.to(roomName).emit('timeSet', t)
@@ -256,36 +256,37 @@ io.on('connection', socket => {
     //listen for chatMessage
     socket.on('chatMessage', (msg) => {
         msg = check(msg);
-        const user = players[players.map( e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName();
+        const user = players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerName();
         console.log(user)
         io.to(roomName).emit('message', formatMessage(user, msg));  // server send the message to everybody
     });
 
-    
+
     // Runs when client disconnects
     socket.on('disconnect', () => {
         if (players.length > 1) {
             let b = false;
             players.forEach((player) => {
                 if (player.getPlayerSocID() == socket.id && !b) {
+                    console.log(player.getPlayerSocID());
                     if (player.getIsHost() == true)
                         setHost(players.map(e => e.getPlayerSocID()).indexOf(socket.id));
                     if (player.getIsRoomOwner() == true)
                         setRoomOwner(players.map(e => e.getPlayerSocID()).indexOf(socket.id));
-                    players.splice(player, 1)
+                    players.splice(players.map(p => p.getPlayerSocID()).indexOf(player.getPlayerSocID()), 1)
                     b = true;
                     console.log(players)
                 }
             })
         }
-        const user = userLeave(socket.id); 
+        const user = userLeave(socket.id);
         if (user) {
             //broadcast to everybody that the user has left the game
-            io.to(user.room).emit('message', formatMessage(botName, `${user.username} has left the game!`));
+            io.to(roomName).emit('message', formatMessage(botName, `${user.username} has left the game!`));
             //send users and room info
-            io.to(user.room).emit('roomUsers', {
-                room: user.room,
-                users: getRoomUsers(user.room)
+            io.to(roomName).emit('roomUsers', {
+                room: roomName,
+                users: players
             });
         }
     });
@@ -304,7 +305,6 @@ io.on('connection', socket => {
         startTimer(socket.id);
         io.to(roomName).emit('gameStarted', wordstartgame);
         hasGameStarted = true;
-        undoStack = [];
         gameStart();
     });
 
@@ -329,20 +329,25 @@ io.on('connection', socket => {
         guessersList = [];
     }
 
-    /*socket.on('undoServer', () => {
-        console.log('undoserver')
-        io.to(roomName).emit('undoClient');
-    })
 
-     socket.on('saveState', (state) => {
-        console.log('save state')
-        undoStack.push = state;
+    socket.on('saveStateServer', () => {
+        io.to(roomName).emit('saveStateClient');
     })
 
     socket.on('retrieveState', () => {
-        console.log('state send back')
-        io.to(roomName).emit('setState', undoStack.pop());
-    }) */
+        io.to(roomName).emit('setState');
+    })
+
+    socket.on('restoreStateServer', () => {
+        io.to(roomName).emit('restoreStateClient');
+    })
+
+
+    socket.on('removePlayer', (sId) => {
+        console.log(sId)
+        socket.broadcast.to(sId.toString()).emit('diconnectUser');
+    })
+
 });
 
 

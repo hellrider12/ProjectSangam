@@ -113,10 +113,10 @@ const canvas = document.querySelector('#canvasBoard');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 canvas.addEventListener('mouseover', () => {
-    if(isEraser)
-    canvas.style.cursor = 'cell'
+    if (isEraser)
+        canvas.style.cursor = 'cell'
     else
-    canvas.style.cursor = 'crosshair'
+        canvas.style.cursor = 'crosshair'
 })
 
 /* <--------------------------------- vars done ---------------------------------------------> */
@@ -167,20 +167,19 @@ window.addEventListener('resize', resizeWindow)
 let isSmall = false;
 
 function resizeWindow() {
-    
+
     const container = document.createElement('div');
     container.innerHTML = 'Tools'
-    if(window.innerWidth <= 700 && !isSmall)
-    {
+    if (window.innerWidth <= 700 && !isSmall) {
         canvas.width = window.innerWidth - 60;
-        canvas.height= 250;
+        canvas.height = 250;
         chatSidebar.style.display = 'none';
-        chatSidebar.style.zIndex ='0';
+        chatSidebar.style.zIndex = '0';
 
         shrink.classList.remove('bar');
         isSmall = true;
-        
-        
+
+
         container.style.height = '20px'
         container.style.width = '60px'
         const list = document.createElement('ul');
@@ -201,19 +200,19 @@ function resizeWindow() {
         container.classList.add('btn');
         container.addEventListener('click', () => {
             list.style.display = 'block';
-            
+
         })
         canvas.addEventListener('mousedown', () => {
             list.style.display = 'none';
         })
-        
+
 
     }
-    else if(window.innerWidth > 700 ) {
-        
-    canvas.width = 0.54 * window.innerWidth;
-    canvas.height = 0.717 * window.innerHeight;
-    chatSidebar.style.display = 'initial';
+    else if (window.innerWidth > 700) {
+
+        canvas.width = 0.54 * window.innerWidth;
+        canvas.height = 0.717 * window.innerHeight;
+        chatSidebar.style.display = 'initial';
 
         isSmall = false;
         shrink.classList.add('bar')
@@ -226,9 +225,9 @@ function resizeWindow() {
 
 const chatSidebar = document.getElementById('chatSidebar');
 const displaySidebarButton = document.getElementById('displaySidebarButton');
-displaySidebarButton.addEventListener('click', ()=> {
-    chatSidebar.style.display =  chatSidebar.style.display ==='none'?'block': 'none';
-    chatSidebar.style.zIndex =  chatSidebar.style.zIndex ==='0'?'2':'0';
+displaySidebarButton.addEventListener('click', () => {
+    chatSidebar.style.display = chatSidebar.style.display === 'none' ? 'block' : 'none';
+    chatSidebar.style.zIndex = chatSidebar.style.zIndex === '0' ? '2' : '0';
     chatSidebar.style.position = 'relative';
 })
 
@@ -257,7 +256,7 @@ socket.on('roomUsers', ({ room, users }) => {
 socket.on('message', message => {
     outputMessage(message);
     //scroll down 
-    chatMessages.scrollTop = chatMessages.scrollHeight;      
+    chatMessages.scrollTop = chatMessages.scrollHeight;
 });
 
 
@@ -302,11 +301,37 @@ function outputRoomName(room) {
 
 //add users to Dom
 function outputUsers(users) {
-    userList.innerHTML = `${users.map(user => !(user.isHost)?`<li>${user.playerName} : ${user.score}</li>`:`<li>${user.playerName} : ${user.score} (Host) </li>`).join('')}`;
+    console.log(users)
+    userList.innerHTML = `${users.map(user => (user.isRoomOwner) ? ((user.isHost) ? `<li>${user.playerName} : ${user.score} 🛠️ 🧑‍🚀 </li>` : `<li>${user.playerName} : ${user.score} 🛠️  </li>`) : ((user.isHost) ? `<li>${user.playerName} : ${user.score} 🧑‍🚀  <button name='${user.socID}' class ='test'>kick</button> </li>` : `<li>${user.playerName} : ${user.score} <button name='${user.socID}' class ='test'>kick</button> </li>`)).join('')}`;
+    sendServer();
 }
 
-
 /* <-------------------------------------- Chat Stuff ------------------------------------------> */
+
+
+/* <-------------------------------------------- Admin Controls ------------------------------------------------> */
+let kickButton = [];
+function sendServer() {
+    kickButton = document.querySelectorAll('.test');
+    if (isHost) {
+        kickButton.forEach((button) => button.addEventListener('click', () => {
+            let n = button.getAttribute('name');
+            console.log(n);
+            socket.emit('removePlayer', n);
+        }))
+    }
+    else {
+        kickButton.forEach((button) => button.style.display = 'none');
+    }
+}
+
+socket.on('diconnectUser', () => {
+    location.replace('../index.html')
+}) 
+
+/* <-------------------------------------------- Admin Controls ------------------------------------------------> */
+
+
 
 
 
@@ -330,42 +355,68 @@ function startPainting(event) { //Setting the canvas to drawable or not
     paint = true;
     getPosition(event);
     socket.emit('startPaint', paint);
+    saveStateCall();//canvas Undo
 }
 
 
 function stopPainting() { //Setting the canvas to drawable or not
     paint = false;
     socket.emit('startPaint', paint);
-    /* saveStateTimeout();//canvas Undo */
+
 }
 
 
-/* {//Canvas Undo
-    undoButton.addEventListener('click', () => { //canvas undo
-        if (isHost) {
-            console.log('undo clicked!')
-            socket.emit('retrieveState');
-        }
-    })
 
-
-    let canSave = true;
-
-
-    function saveStateTimeout() {
-        if (canSave) {
-            canSave = false;
-            socket.emit('saveState', ctx.getImageData(0, 0, canvas.width, canvas.height));  //savestate canvas
-            setTimeout(() => { }, 1000);
-            canSave = true;
-        }
+//Canvas Undo
+undoButton.addEventListener('click', () => { //canvas undo
+    if (isHost) {
+        socket.emit('retrieveState');
     }
+})
 
-    socket.on('setState', (canvasState) => { ///canvas undo
-        console.log('put func')
-        ctx.putImageData(canvasState, 0, 0);
-    })
-}*/
+redoButton.addEventListener('click', () => {//canvas redo
+    if (isHost) {
+        console.log('redo clicked')
+        socket.emit('restoreStateServer');
+    }
+})
+
+let undoStack = [];
+let redoStack = [];
+
+function saveStateCall() {
+    socket.emit('saveStateServer');
+}
+
+socket.on('restoreStateClient', () => {
+    console.log('redo happen')
+    if (redoStack.length > 0) {
+        let i = redoStack.pop();
+        undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        ctx.putImageData(i, 0, 0);
+    }
+})
+
+socket.on('saveStateClient', () => {
+    if (hasGameStarted) {
+        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        undoStack.push(imgData);
+        redoStack = [];
+    }//savestate canvas
+})
+
+socket.on('setState', () => { //canvas undo
+    if (undoStack.length > 0) {
+        redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        let i = undoStack.pop();
+        console.log(redoStack)
+        ctx.putImageData(i, 0, 0);
+    }
+    else if (undoStack.length == 0) {
+        ctx.putImageData(undoStack[0], 0, 0);
+    }
+})
+
 
 
 function brushSlider() {
@@ -394,10 +445,10 @@ function sketch(event) {
     if (canDraw) {
         ctx.beginPath();
         ctx.lineWidth = brushsize;
-        if(isEraser)
-        ctx.lineCap='square';
+        if (isEraser)
+            ctx.lineCap = 'square';
         else
-        ctx.lineCap = 'round';
+            ctx.lineCap = 'round';
         console.log(penColor);
         ctx.strokeStyle = penColor;
         ctx.moveTo(coord.x, coord.y);
@@ -495,13 +546,12 @@ socket.on('drawEnd', () => { //function is called when the a game session is fin
 
 
 socket.on('displayWinners', (winnerList) => { //Display winners to every client 
-    modalMenuContainer.style.display = 'block'; 
+    modalMenuContainer.style.display = 'block';
     console.log(winnerList);
-    if(winnerList.length >= 1){
+    if (winnerList.length >= 1) {
         modalContent.innerHTML = `${winnerList.map(winner => `<li>${winner.playerName}  : ${winner.score}</li><br>`).join('')}`;
     }
-    else
-    {
+    else {
         modalContent.innerHTML = `<li>No one gained any points</li>`
     }
 })
@@ -548,6 +598,9 @@ socket.on('gameStarted', (word) => { // function executed when the server signal
     guessWord = word;
     console.log(guessWord)
     hasGameStarted = true;
+    undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+    redoStack = [];
+    penColor = '#000000';
     var Blanks = blanks();
     modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
@@ -559,7 +612,7 @@ socket.on('gameStarted', (word) => { // function executed when the server signal
     }
     else {
         canDraw = false;
-        startGameBanner.innerHTML = Blanks; 
+        startGameBanner.innerHTML = Blanks;
         startGameBanner.style.visibility = 'visible';
         messageField.style.display = 'inline';
     }
