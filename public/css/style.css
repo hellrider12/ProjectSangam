@@ -211,11 +211,11 @@ a {
 
 /* <---chat sidebar--> */
 .chat-sidebar {
-
+	max-height: 72.2vh;
 	background: var(--dark-color-b);
 	color: #fff;
 	padding: 20px 20px 60px;
-	overflow-y: hidden;
+	overflow-y: scroll;
 }
 
 .chat-sidebar h2 {
@@ -259,7 +259,7 @@ a {
 /* <---chat message form--> */
 .chat-messages {
 	padding: 20px;
-	max-height: 535px;
+	max-height: 72.2vh;
 	/* change */
 	overflow-y: scroll;
 	background-color: rgb(240, 211, 255)
