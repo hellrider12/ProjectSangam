@@ -8,61 +8,133 @@
     integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous" />
   <link rel="stylesheet" href="css/style.css">
   <title>MARS DOODLE</title>
+  <style>
+    .bar {
+      display: grid;
+      grid-auto-flow: column;
+      grid-gap: 20px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn ul {
+      background-color: lightblue;
+      width: fit-content;
+      scale: 60%;
+      translate: -50px -8px;
+      padding: 5px;
+      padding-bottom: 1px;
+    }
+    .btn li {
+      padding: 10px;
+      background-color: white;
+      margin-bottom: 5px;
+    }
+  </style>
 </head>
 
-<body>
-  <div class="chat-container" >
-    <header  class="chat-header">
-      <h1><i class="fas fa-smile"></i>MARS DOODLE</h1>
+<body style="position: relative;">
+  <div class="chat-container">
+    <!-- header -->
+    <header class="chat-header">
+      <h1><i class="fas fa-mars"></i> MARS DOODLE</h1>
       <h3 id="StartGame"></h3>
-      <button id="hostSelector" class="btn" type="button">Start Game</button>
+      <button id="hostSelector" class="startBtn" type="button"><i class="fa fa-rocket" aria-hidden="true" ></i></i><span>Start Game</span></button>
+    
       <a href="index.html" class="btn">Leave Room</a>
     </header>
-    <main class="chat-main">
-      <div class="chat-sidebar" >
-        <h3><i class="fas fa-comments"></i>Room Name:</h3>
+    <!-- header -->
+
+    <!-- The Modal -->
+    <div id="modalContainer" style="display: none; position: fixed;z-index: 1;padding-top: 100px; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; 
+                                    background-color: rgb(0,0,0); background-color: rgba(0,0,0,0.4);transition: 0.5s;">
+      <!-- Modal content -->
+      <div class="modalContent" style="border-radius: 10px;background-color: #be86fa;
+                                      margin: auto;
+                                      padding: 50px;
+                                      border: 1px solid #888;
+                                      width: 80%;">
+        <h1
+          style="color: white ;font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;display: flex;flex-direction: row;justify-content: space-between;">
+          <span>Current Lead</span><span id="modalTimer" style="cursor: pointer;">&times;</span></h1>
+        <hr>
+        <ul id="modalValue" style="font-size: larger;"></ul>
+      </div>
+
+    </div>
+    <!--  The Modal -->
+
+    <!-- div containing all the canvas tools -->
+    <div style="background-color: #e2e7fe;">
+    <div id="controls">
+      <button id="clearCanvasButton">Clear</button>
+      <div id="undoRedo">
+        <button id="undo">&#9754;</button>
+        <button id="redo">&#9755;</button>
+      </div>
+      <div id="shrink">
+        <div id="brushSizeSliderContainer">
+          <input type="range" min="1" max="10" value="1" step="1" name="BrushSize" id="brushSizeSlider">
+        </div>
+
+        <div id="toolContainer">
+          <label for="tools">Tools: </label>
+          <div id="eraserButton" class="toolBarButton"><i style="font-size:large;" class="fa fa-eraser"
+              aria-hidden="true"></i></div>
+        </div>
+
+        <div id="colorContainer">
+          <label for="cursorColor" style="font-weight: 600; font-size: 16px; display: flex; align-self: center;"> Color:
+          </label>
+          <div style="background-color: red;" id="redButton" class="ColorPickerButton"></div>
+          <div style="background-color: blue;" id="blueButton" class="ColorPickerButton"></div>
+          <div style=" background-color: yellow;" id="yellowButton" class="ColorPickerButton"></div>
+          <div style=" background-color: black;" id="blackButton" class="ColorPickerButton"></div>
+        </div>
+      </div>
+      <div id="timer"><span style="font-size: 25px;">&#9203;</span>
+        <h4 id="timerLabel"></h4>
+      </div>
+    </div>
+  </div>
+    <!-- div containing all the canvas tools -->
+
+    <main  class="chat-main">
+      <!-- Div containing ROOM NAME AND USERS -->
+      <div class="chat-sidebar" id="chatSidebar">
+        <h3><i class="fas fa-comments"></i> Room Name :</h3>
         <h2 id="room-name"></h2>
-        <h3><i class="fas fa-users"></i>Users</h3>
+        <h3><i class="fas fa-users"></i> Users :</h3>
         <ul id="users">
         </ul>
       </div>
+      <!-- Div containing ROOM NAME AND USERS -->
+
       <!------------------------- canvas area --------------------------------->
-      <div id="canvasContainer" >
-        <canvas id="canvasBoard" style="border: 2px solid black; " height="500px" width="800px"></canvas>
-        <div style="display: flex; flex-direction: row;justify-content: space-between;" id="controls">
-          <button id="clearCanvasButton">Clear</button>
-          
-          <div style="display:flex; flex-direction: row;" id="colorContainer">
-            <label for="cursorColor">Color:</label>
-            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: red;" id="redButton" class="ColorPickerButton"></div>
-            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: blue;" id="blueButton" class="ColorPickerButton"></div>
-            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: yellow;" id="yellowButton" class="ColorPickerButton"></div>
-            <div style="cursor: pointer;width: 20px;height: 20px;border: none; border-radius: 2px;background-color: black;" id="blackButton" class="ColorPickerButton"></div>
-          </div>
-        </div>
+      <div id="canvasContainer">
+        <canvas id="canvasBoard"></canvas>
       </div>
       <!------------------------- canvas area --------------------------------->
+
+      <!-- Chat Box -->
       <div class="chat-messages"></div>
+      <!-- Chat Box -->
     </main>
 
-    
-    
-    
-
-    <!------------------------ type area----------------------------------> 
+    <!------------------------ type area---------------------------------->
     <div class="chat-form-container">
+      <button id="displaySidebarButton"><div class="icon"><i class="fa fa-users" aria-hidden="true"></i></div> <span>Users</span></button>
       <form id="chat-form">
-        <input id="msg" type="text" placeholder="Enter Message" required autocomplete="off" />
-        <button class="btn"><i class="fas fa-paper-plane"></i> Send</button>
+        <input id="msg" type="text" placeholder="Enter your guess..." required autocomplete="off" />
+        <button class="sendBtn"><div class="icon"><i class="fas fa-paper-plane"></i></div> <span>Send</span></button>
       </form>
     </div>
-    <!------------------------ type area----------------------------------> 
+    <!------------------------ type area---------------------------------->
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qs/6.11.2/qs.min.js"
     integrity="sha512-vCegEXqPUYpZsTGz2lk0jaQ1psxtFeniVJACAXhMVxuoYa/N4nZkjoVFOxLwP7uGeQOoemiz7DQrIpRTj4IBPw=="
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <!-- <script src="https://cdn.socket.io/socket.io-4.7.2.js"></script> -->
+  <!-- <script src="https://cdn.socket.io/socket.io-4.7.2.js"></script> -->
   <script src="/socket.io/socket.io.js"></script>
   <script src="js/main.js"></script>
 </body>
