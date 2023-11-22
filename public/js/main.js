@@ -38,6 +38,7 @@ const redoButton = document.getElementById('redo');
 const modalMenuContainer = document.getElementById('modalContainer');
 const modalTimer = document.getElementById('modalTimer');
 const modalContent = document.getElementById('modalValue');
+const correctWord = document.getElementById('correctWord');
 
 modalTimer.addEventListener('click', () => {
     modalMenuContainer.style.display = 'none';
@@ -115,7 +116,7 @@ const ctx = canvas.getContext('2d', { willReadFrequently: true });
 canvas.addEventListener('mouseover', () => {
     if (isEraser)
         canvas.style.cursor = 'cell'
-    else
+    else 
         canvas.style.cursor = 'crosshair'
 })
 
@@ -554,6 +555,7 @@ socket.on('displayWinners', (winnerList) => { //Display winners to every client
     else {
         modalContent.innerHTML = `<li>No one gained any points</li>`
     }
+    correctWord.innerHTML = `The word is <label style="font-weight:700;color:white">${guessWord}</label>`;
 })
 
 
@@ -575,7 +577,7 @@ function startGame() {
 
 /* <-----------------------------------------------------------------> */
 
-function blanks() {
+/* function blanks() {
     var blank = "";
     var n = guessWord.length;
     let count = Math.ceil(Math.log(n));
@@ -591,17 +593,16 @@ function blanks() {
         }
     }
     return blank;
-}
+} */
 
-socket.on('gameStarted', (word) => { // function executed when the server signals the game is started
+socket.on('gameStarted', ({w, b}) => { // function executed when the server signals the game is started
     console.log("GAME STARTED!!");
-    guessWord = word;
-    console.log(guessWord)
+    guessWord = w;
+    blankWord = b;
     hasGameStarted = true;
     undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
     redoStack = [];
     penColor = '#000000';
-    var Blanks = blanks();
     modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
     if (isHost) {
@@ -612,7 +613,7 @@ socket.on('gameStarted', (word) => { // function executed when the server signal
     }
     else {
         canDraw = false;
-        startGameBanner.innerHTML = Blanks;
+        startGameBanner.innerHTML = blankWord;
         startGameBanner.style.visibility = 'visible';
         messageField.style.display = 'flex';
     }
