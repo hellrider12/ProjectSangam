@@ -185,12 +185,6 @@ a {
 	grid-gap: 5px;
 }
 
-.ColorPickerButton {
-	cursor: pointer;
-	width: 25px;
-	height: 25px;
-	border-radius: 4px;
-}
 
 /* <---Controls bar--> */
 

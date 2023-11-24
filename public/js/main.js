@@ -71,34 +71,14 @@ function setEraser() {
 
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
-const redButton = document.getElementById('redButton');
-const yellowButton = document.getElementById('yellowButton');
-const blueButton = document.getElementById('blueButton');
-const blackButton = document.getElementById('blackButton');
 
-redButton.addEventListener('click', red)
-yellowButton.addEventListener('click', yellow)
-blueButton.addEventListener('click', blue)
-blackButton.addEventListener('click', black)
+const colorPicker = document.getElementById('colorPicker');
+colorPicker.addEventListener('change',colorChange);
+colorPicker.value =  '#000000';
 
-function red() {
-    setColor('#FF0000');
-    isEraser = false;
-}
-
-function yellow() {
-    setColor('#FFFF00')
-    isEraser = false;
-}
-
-function blue() {
-    setColor('#0000FF')
-    isEraser = false;
-}
-
-function black() {
-    setColor('#000000')
-    isEraser = false;
+function colorChange() {
+    setColor(colorPicker.value);
+    console.log(colorPicker.value);
 }
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
@@ -603,6 +583,7 @@ socket.on('gameStarted', ({w, b}) => { // function executed when the server sign
     undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
     redoStack = [];
     penColor = '#000000';
+    colorPicker.value = '#000000'; 
     modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
     if (isHost) {
