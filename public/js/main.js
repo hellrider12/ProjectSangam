@@ -77,8 +77,9 @@ colorPicker.addEventListener('change',colorChange);
 colorPicker.value =  '#000000';
 
 function colorChange() {
+    isEraser = false;
+    canvas.style.cursor = 'crosshair'
     setColor(colorPicker.value);
-    console.log(colorPicker.value);
 }
 
 /* <--------------------------------- Color Buttons ---------------------------------------------> */
@@ -526,6 +527,7 @@ socket.on('drawEnd', () => { //function is called when the a game session is fin
 
 
 
+
 socket.on('displayWinners', (winnerList) => { //Display winners to every client 
     modalMenuContainer.style.display = 'block';
     console.log(winnerList);
@@ -557,23 +559,6 @@ function startGame() {
 
 /* <-----------------------------------------------------------------> */
 
-/* function blanks() {
-    var blank = "";
-    var n = guessWord.length;
-    let count = Math.ceil(Math.log(n));
-    let c = Math.floor(Math.random() * n);
-    for (var i = 0; i < n; i++) {
-        let r = Math.floor(Math.random() * n)
-        if (r == c && count >= 0) {
-            blank = blank + guessWord[i];
-            count--;
-        }
-        else {
-            blank = blank + "_ ";
-        }
-    }
-    return blank;
-} */
 
 socket.on('gameStarted', ({w, b}) => { // function executed when the server signals the game is started
     console.log("GAME STARTED!!");
