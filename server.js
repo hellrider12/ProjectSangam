@@ -263,7 +263,7 @@ io.on('connection', socket => {
         let roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(sId)].getPlayerRoom().roomname);
         roomPlayers.forEach(p => {
             if (p.isTimerOn) {
-                if (p.time == p.timeLimit) {// Time limit
+                if (p.time >= p.timeLimit) {// Time limit
                     showWinner(roomPlayers);
                     p.isTimerOn = false;
                     p.hasGameStarted = false;
@@ -284,7 +284,8 @@ io.on('connection', socket => {
                 }
             }
         })
-        setTimeout(startTimer.bind(null,sId), 1000);
+        if(roomPlayers[0].isTimerOn)
+            setTimeout(startTimer.bind(null,sId), 1000);
     }
 
     //function to filter the chats and blocking all the bad words
