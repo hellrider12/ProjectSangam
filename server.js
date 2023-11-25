@@ -118,7 +118,6 @@ io.on('connection', socket => {
         //maintaining players list hasGameStarted, wordToDraw, time, isTimerOn, timer, guessersList, timeLimit
         let player = new Player(username, { roomname: room, hasGameStarted: false, wordToDraw: null, time: 0, isTimerOn: false, guessersList: [], timeLimit: 30, blankWord: null }, socket.id, (players.filter(e => e.getPlayerRoom().roomname === room)).length == 0, (players.filter(e => e.getPlayerRoom().roomname === room)).length == 0, 0, 0)
         players.push(player);
-        console.log(players)
 
         socket.join(player.getPlayerRoom().roomname);
 
@@ -141,28 +140,28 @@ io.on('connection', socket => {
 
     //updates the host for the connected clients
     function updateHost(roomPlayers) {
-        console.log('update Host')
+        console.log(roomPlayers)
         roomPlayers.forEach((player) => {
-            console.log(player.getIsHost());
+            console.log('sethostclient')
             io.to(player.getPlayerSocID()).emit('setHostClient', player.getIsHost());
+            io.to(player.getPlayerSocID()).emit('setRoomOwnerClient', player.getIsRoomOwner());
+
         })
 
-
-        io.to(roomPlayers[0].roomname).emit('roomUsers', {
+        io.in(roomPlayers[0].getPlayerRoom().roomname).emit('roomUsers', {
             room: roomPlayers[0].getPlayerRoom().roomname,
-            users: players.filter(p => p.getPlayerRoom().roomname === roomPlayers[0].getPlayerRoom().roomname)
+            users: roomPlayers
         });
+
     }
 
     //if the host leaves to shift the host to someone else
     function setHost(roomPlayers, id) {
-        console.log(roomPlayers.length);
-        if (roomPlayers.length > 1) {
+        if (roomPlayers.length > 2) {
             let index = Math.floor(Math.random() * (roomPlayers.length))
-            while (index == roomPlayers.map(e => e.getPlayerSocID).indexOf(id)) {
+            while (index == roomPlayers.map(e => e.getPlayerSocID).indexOf(id.toString())) {
                 index = Math.floor(Math.random() * (roomPlayers.length))
             }
-
             for (let i = 0; i < roomPlayers.length; i++) {
                 if (i == index) {
                     players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[i].getPlayerSocID())].setIsHost(true);
@@ -173,44 +172,59 @@ io.on('connection', socket => {
                 }
             }
         }
-        /* else if(roomPlayers.length == 2)
-        {
-            console.log(roomPlayers[0].isHost)
-            if(roomPlayers[0].isHost){
-                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsRoomOwner(true);
-                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsRoomOwner(false);
+        else if (roomPlayers.length == 2) {
+            if (roomPlayers[0].isHost) {
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsHost(true);
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsHost(false);
             }
             else {
-                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsRoomOwner(false);
-                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsRoomOwner(true);
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsHost(false);
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsHost(true);
             }
-        } */
+        }
         else
             players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsHost(true);
+
+        roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(id)].getPlayerRoom().roomname);
         updateHost(roomPlayers);
     }
 
 
     //if the Room Owner leaves to shift the owner to someone else
     function setRoomOwner(roomPlayers, id) {
-        if (roomPlayers.length > 1) {
+        if (roomPlayers.length > 2) {
             let index = Math.floor(Math.random() * (roomPlayers.length))
-            while (index == roomPlayers.map(e => e.getPlayerSocID).indexOf(id)) {
+            while (index == roomPlayers.map(e => e.getPlayerSocID).indexOf(id.toString())) {
                 index = Math.floor(Math.random() * (roomPlayers.length))
             }
-
             for (let i = 0; i < roomPlayers.length; i++) {
                 if (i == index) {
                     players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[i].getPlayerSocID())].setIsRoomOwner(true);
+
                 }
                 else {
                     players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[i].getPlayerSocID())].setIsRoomOwner(false);
                 }
             }
         }
+        else if (roomPlayers.length == 2) {
+            if (roomPlayers[0].isHost) {
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsRoomOwner(true);
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsHost(false);
+            }
+            else {
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[1].getPlayerSocID())].setIsRoomOwner(false);
+                players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsRoomOwner(true);
+            }
+        }
         else
             players[players.map(e => e.getPlayerSocID()).indexOf(roomPlayers[0].getPlayerSocID())].setIsRoomOwner(true);
-
+            
+        roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(id)].getPlayerRoom().roomname);
+        roomPlayers.forEach((player) => {
+            io.to(player.getPlayerSocID()).emit('setRoomOwnerClient', player.getIsRoomOwner());
+        })
+        
     }
 
     //function to generate the random word for the host to draw
@@ -223,7 +237,7 @@ io.on('connection', socket => {
     //On the event when correct word is guessed
     socket.on('wordGuessed', () => {
         let r = players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)];
-        r.setScore(r.getScore() + 100 + ((r.getPlayerRoom().timeLimit - r.getPlayerRoom().time) - ((r.getPlayerRoom().timeLimit - r.getPlayerRoom().time) % 10)));
+        r.setScore(r.getScore() + 100 + ((r.timeLimit - r.time) - (r.timeLimit - r.time) % 10));
         // to the one who has guessed correctly
         io.to(r.getPlayerRoom().roomname).emit('roomUsers', {
             room: r.getPlayerRoom().roomname,
@@ -259,8 +273,9 @@ io.on('connection', socket => {
         io.to(roomPlayers[0].getPlayerRoom().roomname).emit('displayWinners', gList); //relays the leaderboard to all the clients
     }
 
-    function startTimer(sId){
+    function startTimer(sId) {
         let roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(sId)].getPlayerRoom().roomname);
+        let boolHostSet = false;
         roomPlayers.forEach(p => {
             if (p.isTimerOn) {
                 if (p.time >= p.timeLimit) {// Time limit
@@ -269,9 +284,10 @@ io.on('connection', socket => {
                     p.hasGameStarted = false;
                     p.wordToDraw = null;
                     p.time = 0;
-                    if (p.isHost) {
+                    if (p.getIsHost() && !boolHostSet) {
                         p.timer = null;
                         setHost(roomPlayers, p.socID);
+                        boolHostSet = true;
                     }
                     io.to(roomPlayers[0].getPlayerRoom().roomname).emit('timeSet', '00:00')
                     io.to(roomPlayers[0].getPlayerRoom().roomname).emit('startPaint', false);
@@ -284,8 +300,8 @@ io.on('connection', socket => {
                 }
             }
         })
-        if(roomPlayers[0].isTimerOn)
-            setTimeout(startTimer.bind(null,sId), 1000);
+        if (roomPlayers[0].isTimerOn)
+            setTimeout(startTimer.bind(null, sId), 1000);
     }
 
     //function to filter the chats and blocking all the bad words
@@ -297,7 +313,7 @@ io.on('connection', socket => {
     socket.on('chatMessage', (msg) => {
         let nmsg = check(msg);
         const user = players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)];
-        console.log(user)
+
         io.to(user.getPlayerRoom().roomname).emit('message', formatMessage(user.getPlayerName(), nmsg));  // server send the message to everybody
         if (nmsg != msg) {
             if (user.getWarning() == 0) {
@@ -325,10 +341,20 @@ io.on('connection', socket => {
     socket.on('disconnect', () => {
         let lp = players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)];
         let roomPlayers = players.filter(p => p.getPlayerRoom().roomname === lp.getPlayerRoom().roomname);
-        if (lp.isHost == true)
+        if (lp.isHost == true) {
+            roomPlayers.forEach(p => {
+                p.isTimerOn = false;
+                p.hasGameStarted = false;
+                p.wordToDraw = null;
+                p.time = 0;
+                io.to(roomPlayers[0].getPlayerRoom().roomname).emit('timeSet', '00:00')
+                io.to(roomPlayers[0].getPlayerRoom().roomname).emit('startPaint', false);
+                io.to(roomPlayers[0].getPlayerRoom().roomname).emit('drawEnd')
+            })
             setHost(roomPlayers, socket.id);
-        /* if (lp.isRoomOwner == true)
-            setRoomOwner(roomPlayers, socket.id); */
+        }
+        if (lp.isRoomOwner == true)
+            setRoomOwner(roomPlayers, socket.id);
         players.splice(players.map(p => p.getPlayerSocID()).indexOf(socket.id), 1)
         //broadcast to everybody that the user has left the game
         io.to(lp.getPlayerRoom().roomname).emit('message', formatMessage(botName, `${lp.playerName} has left the game!`));
@@ -367,8 +393,7 @@ io.on('connection', socket => {
         let roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerRoom().roomname);
         let w = randomWordGenerator();
         let b = blanks(w);
-        console.log(w)
-        console.log(b)
+
         roomPlayers.forEach((p) => {
             p.wordToDraw = w;
             p.isTimerOn = true;
@@ -392,7 +417,6 @@ io.on('connection', socket => {
 
     socket.on('penColor', hexValue => {
         let roomPlayers = players.filter(p => p.getPlayerRoom().roomname === players[players.map(e => e.getPlayerSocID()).indexOf(socket.id)].getPlayerRoom().roomname);
-        console.log(roomPlayers);
         io.to(roomPlayers[0].getPlayerRoom().roomname).emit('penColor', hexValue);
 
     });

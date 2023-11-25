@@ -86,10 +86,10 @@ function colorChange() {
 
 
 let brushsize = 1;
-let sendTick = 0, recieveTick = 0;
+
 
 let coord = { x: 0, y: 0, brushsize: brushsize };
-
+let recieveTick = 0;
 let paint = false;
 const canvas = document.querySelector('#canvasBoard');
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -107,6 +107,7 @@ let saveInterval;
 
 var pName = "";
 var isHost = false;
+var isRoomOwner = false;
 var hasGameStarted = false;
 var canDraw = false;
 var penColor = "#000000";
@@ -295,7 +296,7 @@ function outputUsers(users) {
 let kickButton = [];
 function sendServer() {
     kickButton = document.querySelectorAll('.kickBtn');
-    if (isHost) {
+    if (isRoomOwner) {
         kickButton.forEach((button) => button.addEventListener('click', () => {
             let n = button.getAttribute('name');
             console.log(n);
@@ -444,7 +445,6 @@ function sketch(event) {
 function sendPosition(Xpos, Ypos) {
     if (canDraw) {
         socket.emit('position', { x: Xpos, y: Ypos, brushsize: brushsize });
-        sendTick++;
     }
 }
 
@@ -464,12 +464,16 @@ socket.on('setHostClient', (value) => {
     }
 })
 
+socket.on('setRoomOwnerClient', (value) => {
+    this.isRoomOwner = value;
+})
+
 
 socket.on('otherPOS', position => {
-    recieveTick++;
+    
     paint = true;
     ctx.beginPath();
-
+    recieveTick++;
     ctx.lineWidth = position.brushsize;
     ctx.lineCap = 'round';
     ctx.strokeStyle = penColor;
