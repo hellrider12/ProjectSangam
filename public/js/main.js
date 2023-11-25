@@ -576,10 +576,10 @@ socket.on('gameStarted', ({w, b}) => { // function executed when the server sign
     modalMenuContainer.style.display = 'none';
     timerLabel.style.visibility = 'visible';
     if (isHost) {
-        canDraw = true;
-        startGameBanner.innerHTML = guessWord;
-        startGameBanner.style.visibility = 'visible';
-        messageField.style.display = 'none';
+        canDraw = true;  // Enable drawing for host
+        startGameBanner.innerHTML = guessWord;  // Display guess word for host
+        startGameBanner.style.visibility = 'visible';// Make start game banner visible
+        messageField.style.display = 'none';    // Hide message field for host
     }
     else {
         canDraw = false;
@@ -589,7 +589,26 @@ socket.on('gameStarted', ({w, b}) => { // function executed when the server sign
     }
 });
 
+////////////////////image download
+ctx.fillStyle = 'white';
+ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+function saveImage() {
+
+const dataURL = canvas.toDataURL('image/png'); // Convert canvas content to data URL
+
+const link = document.createElement('a'); // Create link element
+
+link.href = dataURL;  // Set href attribute with data URL
+
+link.download = 'drawing.png'; // Set download attribute with desired filename
+
+document.body.appendChild(link); // Append link to document
+
+link.click(); // a click event on link to start download
+
+document.body.removeChild(link);// Remove the link from the document
+}
 
 /* canvas.addEventListener('wheel', brushSize); */ //mouse wheel event for brush size *was in window load*
 /* function brushSize(event) {

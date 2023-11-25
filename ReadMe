@@ -1,5 +1,8 @@
-to run 
-1.) first type the command "npm express nodemon socket.io". Hit enter
-2.) start the servers by using the command "npx nodemon server.js". Hit enter
-3.) then go to https://localhost:3000 
+to run (run all commands within the project directory in the terminal)
+1.) Type npm -v to check if node is installed
 
+2.) Then type the command "npm express socket.io bad-words". Hit enter
+
+3.) start the servers by using the command "node server.js". Hit enter
+
+4.) then go to https://localhost:3000 on the browser.
